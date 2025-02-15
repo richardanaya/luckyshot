@@ -51,9 +51,14 @@ pub async fn find_related_files(query_embedding: Vec<f32>) -> Vec<String> {
     // Sort by similarity (highest first)
     matches.sort_by(|a, b| b.similarity.partial_cmp(&a.similarity).unwrap());
 
-    // Return top matches as filenames
+    // Print matches with similarity scores
+    for m in &matches {
+        println!("Similarity {:.3}: {}", m.similarity, m.filename);
+    }
+
+    // Return filenames only
     matches.iter()
-        .map(|m| format!("{} (similarity: {:.3})", m.filename, m.similarity))
+        .map(|m| m.filename.clone())
         .collect()
 }
 
