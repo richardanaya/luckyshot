@@ -12,11 +12,12 @@ pub async fn scan_files(pattern: &str, api_key: &str) -> Result<(), Box<dyn std:
                 for entry in entries {
                     if let Ok(entry) = entry {
                         let path = entry.path();
+                        let relative_path = path.strip_prefix(std::env::current_dir().unwrap()).unwrap_or(&path);
+                        let path_str = relative_path.to_string_lossy().to_string();
+                        
                         if path.is_dir() {
-                            visit_dirs(&path, pattern, file_embeddings, api_key);
+                            visit_dirs(&path, pattern, file_embeddings, api_key).await;
                         } else {
-                            let relative_path = path.strip_prefix(".").unwrap_or(&path);
-                            let path_str = relative_path.to_string_lossy().to_string();
                             
                             // Skip the vectors file itself
                             if path_str.ends_with(".luckyshot.file.vectors.v1") {
@@ -54,7 +55,8 @@ pub async fn scan_files(pattern: &str, api_key: &str) -> Result<(), Box<dyn std:
     }
 
     // Start recursive directory traversal from current directory
-    visit_dirs(std::path::Path::new("."), pattern, &mut file_embeddings, api_key).await;
+    let current_dir = std::env::current_dir()?;
+    visit_dirs(&current_dir, pattern, &mut file_embeddings, api_key).await;
 
     // Save embeddings to file
     match serde_json::to_string_pretty(&file_embeddings) {
