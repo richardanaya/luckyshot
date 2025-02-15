@@ -12,10 +12,26 @@ enum Commands {
     /// Watch for file changes
     Watch,
     
-    /// Execute a one-shot generation with the given prompt
+    /// Ask a question about the codebase
     #[command(trailing_var_arg = true)]
-    Make {
-        /// The prompt to process
+    Ask {
+        /// The question to ask
+        #[arg(required = true)]
+        prompt: Vec<String>,
+    },
+
+    /// Get architectural suggestions for the codebase
+    #[command(trailing_var_arg = true)]
+    Architect {
+        /// The architectural prompt
+        #[arg(required = true)]
+        prompt: Vec<String>,
+    },
+
+    /// Generate or modify code based on a prompt
+    #[command(trailing_var_arg = true)]
+    Code {
+        /// The code generation prompt
         #[arg(required = true)]
         prompt: Vec<String>,
     },
@@ -28,9 +44,17 @@ fn main() {
         Commands::Watch => {
             println!("Watching for file changes...");
         }
-        Commands::Make { prompt } => {
+        Commands::Ask { prompt } => {
             let prompt = prompt.join(" ");
-            println!("Processing prompt: {}", prompt);
+            println!("Answering question: {}", prompt);
+        }
+        Commands::Architect { prompt } => {
+            let prompt = prompt.join(" ");
+            println!("Providing architectural advice for: {}", prompt);
+        }
+        Commands::Code { prompt } => {
+            let prompt = prompt.join(" ");
+            println!("Generating/modifying code for: {}", prompt);
         }
     }
 }
