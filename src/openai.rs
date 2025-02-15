@@ -9,7 +9,7 @@ struct EmbeddingRequest {
     model: String,
 }
 
-pub async fn find_related_files(embedding: Vec<f32>) -> Vec<String> {
+pub async fn find_related_files(_embedding: Vec<f32>) -> Vec<String> {
     // TODO: Implement actual file finding logic
     Vec::new()
 }
