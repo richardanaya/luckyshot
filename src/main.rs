@@ -15,6 +15,13 @@ struct Cli {
 enum Commands {
     /// Watch for file changes
     Watch,
+
+    /// Scan files matching a glob pattern
+    Scan {
+        /// The glob pattern to match files
+        #[arg(required = true)]
+        pattern: String,
+    },
     
     /// Ask a question about the codebase
     #[command(trailing_var_arg = true)]
@@ -52,6 +59,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     match cli.command {
         Commands::Watch => {
             println!("Watching for file changes...");
+        }
+        Commands::Scan { pattern } => {
+            println!("Scanning for files matching pattern: {}", pattern);
+            for entry in glob::glob(&pattern).expect("Failed to read glob pattern") {
+                match entry {
+                    Ok(path) => println!("{}", path.display()),
+                    Err(e) => println!("Error: {}", e),
+                }
+            }
         }
         Commands::Ask { prompt } => {
             let prompt = prompt.join(" ");
