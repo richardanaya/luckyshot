@@ -1,4 +1,6 @@
 use clap::{Parser, Subcommand};
+use dotenvy::dotenv;
+use std::env;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -38,6 +40,14 @@ enum Commands {
 }
 
 fn main() {
+    dotenv().ok();
+    
+    if let Ok(api_key) = env::var("OPENAI_API_KEY") {
+        println!("OPENAI_API_KEY: {}", api_key);
+    } else {
+        eprintln!("OPENAI_API_KEY not found in environment");
+    }
+
     let cli = Cli::parse();
 
     match cli.command {
