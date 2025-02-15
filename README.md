@@ -29,7 +29,7 @@ To generate embeddings for your codebase, use the `scan` command with a glob pat
 
 ```bash
 luckyshot scan "*.rs"  # Scan all Rust files
-luckyshot scan "src/**/*"  # Scan all files in src directory recursively
+luckyshot scan "src/**/*{.rs,.md}"  # Scan all files in src directory recursively
 ```
 
 This will:
