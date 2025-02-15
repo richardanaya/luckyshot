@@ -1,11 +1,17 @@
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::error::Error;
+use std::vec::Vec;
 
 #[derive(Debug, Serialize)]
 struct EmbeddingRequest {
     input: String,
     model: String,
+}
+
+pub async fn find_related_files(embedding: Vec<f32>) -> Vec<String> {
+    // TODO: Implement actual file finding logic
+    Vec::new()
 }
 
 #[derive(Debug, Deserialize)]

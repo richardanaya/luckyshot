@@ -60,6 +60,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             match openai::get_embedding(&prompt, &api_key).await {
                 Ok(embedding) => {
                     println!("Embedding vector (length {}): {:?}", embedding.len(), embedding);
+                    let related_files = openai::find_related_files(embedding).await;
+                    println!("Related files: {:?}", related_files);
                 }
                 Err(e) => {
                     eprintln!("Error getting embedding: {}", e);
@@ -69,10 +71,32 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Commands::Architect { prompt } => {
             let prompt = prompt.join(" ");
             println!("Providing architectural advice for: {}", prompt);
+            
+            match openai::get_embedding(&prompt, &api_key).await {
+                Ok(embedding) => {
+                    println!("Embedding vector (length {}): {:?}", embedding.len(), embedding);
+                    let related_files = openai::find_related_files(embedding).await;
+                    println!("Related files: {:?}", related_files);
+                }
+                Err(e) => {
+                    eprintln!("Error getting embedding: {}", e);
+                }
+            }
         }
         Commands::Code { prompt } => {
             let prompt = prompt.join(" ");
             println!("Generating/modifying code for: {}", prompt);
+            
+            match openai::get_embedding(&prompt, &api_key).await {
+                Ok(embedding) => {
+                    println!("Embedding vector (length {}): {:?}", embedding.len(), embedding);
+                    let related_files = openai::find_related_files(embedding).await;
+                    println!("Related files: {:?}", related_files);
+                }
+                Err(e) => {
+                    eprintln!("Error getting embedding: {}", e);
+                }
+            }
         }
     }
     Ok(())
