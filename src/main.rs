@@ -15,9 +15,6 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Watch for file changes
-    Watch,
-
     /// Scan files matching a glob pattern
     Scan {
         /// The glob pattern to match files
@@ -32,22 +29,6 @@ enum Commands {
         #[arg(required = true)]
         prompt: Vec<String>,
     },
-
-    /// Get architectural suggestions for the codebase
-    #[command(trailing_var_arg = true)]
-    Architect {
-        /// The architectural prompt
-        #[arg(required = true)]
-        prompt: Vec<String>,
-    },
-
-    /// Generate or modify code based on a prompt
-    #[command(trailing_var_arg = true)]
-    Code {
-        /// The code generation prompt
-        #[arg(required = true)]
-        prompt: Vec<String>,
-    },
 }
 
 #[tokio::main]
@@ -59,9 +40,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Watch => {
-            println!("Watching for file changes...");
-        }
         Commands::Scan { pattern } => {
             scan::scan_files(&pattern, &api_key).await?;
         }
@@ -72,42 +50,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             match openai::get_embedding(&prompt, &api_key).await {
                 Ok(embedding) => {
                     println!("Got embedding vector (length {})", embedding.len());
-                    let related_files = openai::find_related_files(embedding).await;
-                }
-                Err(e) => {
-                    eprintln!("Error getting embedding: {}", e);
-                }
-            }
-        }
-        Commands::Architect { prompt } => {
-            let prompt = prompt.join(" ");
-            println!("Providing architectural advice for: {}", prompt);
-
-            match openai::get_embedding(&prompt, &api_key).await {
-                Ok(embedding) => {
-                    println!(
-                        "Embedding vector (length {}): {:?}",
-                        embedding.len(),
-                        embedding
-                    );
-                    let related_files = openai::find_related_files(embedding).await;
-                }
-                Err(e) => {
-                    eprintln!("Error getting embedding: {}", e);
-                }
-            }
-        }
-        Commands::Code { prompt } => {
-            let prompt = prompt.join(" ");
-            println!("Generating/modifying code for: {}", prompt);
-
-            match openai::get_embedding(&prompt, &api_key).await {
-                Ok(embedding) => {
-                    println!(
-                        "Embedding vector (length {}): {:?}",
-                        embedding.len(),
-                        embedding
-                    );
                     let related_files = openai::find_related_files(embedding).await;
                 }
                 Err(e) => {
