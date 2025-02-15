@@ -12,8 +12,7 @@ Luckyshot solves this by using AI embeddings to automatically find the most rele
 
 - File scanning and embedding generation
 - Semantic search across codebase
-- Intelligent code generation using context-aware prompts
-- File change watching (coming soon)
+- Intelligent answers using context-aware prompts
 
 ## Installation
 
