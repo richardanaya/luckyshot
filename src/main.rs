@@ -2,6 +2,8 @@ use clap::{Parser, Subcommand};
 use dotenvy::dotenv;
 use std::env;
 use glob;
+use std::fs;
+use std::collections::HashMap;
 
 mod openai;
 
@@ -63,11 +65,41 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         Commands::Scan { pattern } => {
             println!("Scanning for files matching pattern: {}", pattern);
+            let mut file_embeddings: HashMap<String, Vec<f32>> = HashMap::new();
+            
             for entry in glob::glob(&pattern).expect("Failed to read glob pattern") {
                 match entry {
-                    Ok(path) => println!("{}", path.display()),
-                    Err(e) => println!("Error: {}", e),
+                    Ok(path) => {
+                        let path_str = path.to_string_lossy().to_string();
+                        println!("Processing: {}", path_str);
+                        
+                        match fs::read_to_string(&path) {
+                            Ok(contents) => {
+                                match openai::get_embedding(&contents, &api_key).await {
+                                    Ok(embedding) => {
+                                        println!("Got embedding for {} (length {})", path_str, embedding.len());
+                                        file_embeddings.insert(path_str, embedding);
+                                    }
+                                    Err(e) => eprintln!("Error getting embedding for {}: {}", path_str, e),
+                                }
+                            }
+                            Err(e) => eprintln!("Error reading file {}: {}", path_str, e),
+                        }
+                    }
+                    Err(e) => println!("Error with path: {}", e),
                 }
+            }
+            
+            // Save embeddings to file
+            match serde_json::to_string_pretty(&file_embeddings) {
+                Ok(json) => {
+                    if let Err(e) = fs::write(".luckyshot.file.vectors.v1", json) {
+                        eprintln!("Error writing vectors file: {}", e);
+                    } else {
+                        println!("Successfully saved vectors for {} files", file_embeddings.len());
+                    }
+                }
+                Err(e) => eprintln!("Error serializing vectors: {}", e),
             }
         }
         Commands::Ask { prompt } => {
