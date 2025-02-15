@@ -59,7 +59,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             
             match openai::get_embedding(&prompt, &api_key).await {
                 Ok(embedding) => {
-                    println!("Embedding vector (length {}): {:?}", embedding.len(), embedding);
+                    println!("Got embedding vector (length {})", embedding.len());
                     let related_files = openai::find_related_files(embedding).await;
                     println!("Related files: {:?}", related_files);
                 }
