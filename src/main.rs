@@ -1,11 +1,9 @@
 use clap::{Parser, Subcommand};
 use dotenvy::dotenv;
-use glob_match::glob_match;
-use std::collections::HashMap;
 use std::env;
-use std::fs;
 
 mod openai;
+mod scan;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -64,62 +62,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("Watching for file changes...");
         }
         Commands::Scan { pattern } => {
-            println!("Scanning for files matching pattern: {}", pattern);
-            let mut file_embeddings: HashMap<String, Vec<f32>> = HashMap::new();
-
-            // Recursively get all files in current directory
-            for entry in std::fs::read_dir(".").expect("Failed to read directory") {
-                if let Ok(entry) = entry {
-                    if let Ok(path) = entry.path().canonicalize() {
-                        let path_str = path.to_string_lossy().to_string();
-                        // Skip the vectors file itself
-                        if path_str.ends_with(".luckyshot.file.vectors.v1") {
-                            continue;
-                        }
-                        // Only process files that match the pattern
-                        if !glob_match(&pattern, &path_str) {
-                            continue;
-                        }
-                        println!("Processing: {}", path_str);
-
-                        match fs::read_to_string(&path) {
-                            Ok(contents) => {
-                                match openai::get_embedding(&contents, &api_key).await {
-                                    Ok(embedding) => {
-                                        println!(
-                                            "Got embedding for {} (length {})",
-                                            path_str,
-                                            embedding.len()
-                                        );
-                                        file_embeddings.insert(path_str, embedding);
-                                    }
-                                    Err(e) => {
-                                        eprintln!("Error getting embedding for {}: {}", path_str, e)
-                                    }
-                                }
-                            }
-                            Err(e) => eprintln!("Error reading file {}: {}", path_str, e),
-                        }
-                    }
-                } else {
-                    println!("Error with path: {}", entry.unwrap_err());
-                }
-            }
-
-            // Save embeddings to file
-            match serde_json::to_string_pretty(&file_embeddings) {
-                Ok(json) => {
-                    if let Err(e) = fs::write(".luckyshot.file.vectors.v1", json) {
-                        eprintln!("Error writing vectors file: {}", e);
-                    } else {
-                        println!(
-                            "Successfully saved vectors for {} files",
-                            file_embeddings.len()
-                        );
-                    }
-                }
-                Err(e) => eprintln!("Error serializing vectors: {}", e),
-            }
+            scan::scan_files(&pattern, &api_key).await?;
         }
         Commands::Ask { prompt } => {
             let prompt = prompt.join(" ");
