@@ -2,9 +2,9 @@ use clap::{Parser, Subcommand};
 use dotenvy::dotenv;
 use std::env;
 
+mod files;
 mod openai;
 mod scan;
-mod files;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -73,7 +73,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 Ok(embedding) => {
                     println!("Got embedding vector (length {})", embedding.len());
                     let related_files = openai::find_related_files(embedding).await;
-                    println!("Related files: {:?}", related_files);
                 }
                 Err(e) => {
                     eprintln!("Error getting embedding: {}", e);
@@ -92,7 +91,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         embedding
                     );
                     let related_files = openai::find_related_files(embedding).await;
-                    println!("Related files: {:?}", related_files);
                 }
                 Err(e) => {
                     eprintln!("Error getting embedding: {}", e);
@@ -111,7 +109,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         embedding
                     );
                     let related_files = openai::find_related_files(embedding).await;
-                    println!("Related files: {:?}", related_files);
                 }
                 Err(e) => {
                     eprintln!("Error getting embedding: {}", e);
