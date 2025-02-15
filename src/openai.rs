@@ -2,6 +2,14 @@ use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::error::Error;
 use std::vec::Vec;
+use std::fs;
+use std::collections::HashMap;
+
+#[derive(Debug)]
+pub struct FileMatch {
+    pub filename: String,
+    pub similarity: f32,
+}
 
 #[derive(Debug, Serialize)]
 struct EmbeddingRequest {
@@ -9,9 +17,56 @@ struct EmbeddingRequest {
     model: String,
 }
 
-pub async fn find_related_files(_embedding: Vec<f32>) -> Vec<String> {
-    // TODO: Implement actual file finding logic
-    Vec::new()
+pub async fn find_related_files(query_embedding: Vec<f32>) -> Vec<String> {
+    // Load the vectors file
+    let vectors_content = match fs::read_to_string(".luckyshot.file.vectors.v1") {
+        Ok(content) => content,
+        Err(e) => {
+            eprintln!("Error reading vectors file: {}", e);
+            return Vec::new();
+        }
+    };
+
+    // Parse the JSON
+    let file_embeddings: HashMap<String, Vec<f32>> = match serde_json::from_str(&vectors_content) {
+        Ok(map) => map,
+        Err(e) => {
+            eprintln!("Error parsing vectors file: {}", e);
+            return Vec::new();
+        }
+    };
+
+    // Calculate cosine similarity for each file
+    let mut matches: Vec<FileMatch> = file_embeddings
+        .iter()
+        .map(|(filename, embedding)| {
+            let similarity = cosine_similarity(&query_embedding, embedding);
+            FileMatch {
+                filename: filename.clone(),
+                similarity,
+            }
+        })
+        .collect();
+
+    // Sort by similarity (highest first)
+    matches.sort_by(|a, b| b.similarity.partial_cmp(&a.similarity).unwrap());
+
+    // Return top matches as filenames
+    matches.iter()
+        .map(|m| format!("{} (similarity: {:.3})", m.filename, m.similarity))
+        .collect()
+}
+
+fn cosine_similarity(a: &[f32], b: &[f32]) -> f32 {
+    let dot_product: f32 = a.iter().zip(b.iter()).map(|(x, y)| x * y).sum();
+    let norm_a: f32 = a.iter().map(|x| x * x).sum::<f32>().sqrt();
+    let norm_b: f32 = b.iter().map(|x| x * x).sum::<f32>().sqrt();
+    
+    if norm_a == 0.0 || norm_b == 0.0 {
+        0.0
+    } else {
+        dot_product / (norm_a * norm_b)
+    }
 }
 
 #[derive(Debug, Deserialize)]
