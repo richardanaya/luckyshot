@@ -1,6 +1,6 @@
 [package]
 name = "luckyshot"
-version = "0.0.2"
+version = "0.0.3"
 edition = "2021"
 description = "A CLI tool for one-shot code generations using RAG and file watching"
 license = "MIT"
