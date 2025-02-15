@@ -56,6 +56,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Commands::Ask { prompt } => {
             let prompt = prompt.join(" ");
             println!("Answering question: {}", prompt);
+            
+            match openai::get_embedding(&prompt, &api_key).await {
+                Ok(embedding) => {
+                    println!("Embedding vector (length {}): {:?}", embedding.len(), embedding);
+                }
+                Err(e) => {
+                    eprintln!("Error getting embedding: {}", e);
+                }
+            }
         }
         Commands::Architect { prompt } => {
             let prompt = prompt.join(" ");
