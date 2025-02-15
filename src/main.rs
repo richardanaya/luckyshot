@@ -4,6 +4,7 @@ use std::env;
 
 mod openai;
 mod scan;
+mod files;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
