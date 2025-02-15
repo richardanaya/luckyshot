@@ -33,7 +33,7 @@ luckyshot scan "src/**/*{.rs,.md}"  # Scan all files in src directory recursivel
 ```
 
 This will:
-1. Find all files matching the pattern
+1. Find all files matching the pattern (respecting your .gitignore)
 2. Generate embeddings using OpenAI's API
 3. Save the embeddings to `.luckyshot.file.vectors.v1`
 
