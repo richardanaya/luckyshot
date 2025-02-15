@@ -36,7 +36,7 @@ pub async fn find_related_files(query_embedding: Vec<f32>) -> Vec<String> {
         }
     };
 
-    // Calculate cosine similarity for each file
+    // Calculate similarity for each file
     let mut matches: Vec<FileMatch> = file_embeddings
         .iter()
         .map(|(filename, embedding)| {
@@ -48,10 +48,21 @@ pub async fn find_related_files(query_embedding: Vec<f32>) -> Vec<String> {
         })
         .collect();
 
-    // Sort by similarity (highest first)
+    // Find min and max similarities for normalization
+    let min_similarity = matches.iter().map(|m| m.similarity).fold(f32::INFINITY, f32::min);
+    let max_similarity = matches.iter().map(|m| m.similarity).fold(f32::NEG_INFINITY, f32::max);
+    
+    // Normalize similarities to 0-1 range
+    if (max_similarity - min_similarity).abs() > f32::EPSILON {
+        for m in &mut matches {
+            m.similarity = (m.similarity - min_similarity) / (max_similarity - min_similarity);
+        }
+    }
+
+    // Sort by normalized similarity (highest first)
     matches.sort_by(|a, b| b.similarity.partial_cmp(&a.similarity).unwrap());
 
-    // Print matches with similarity scores
+    // Print matches with normalized similarity scores
     for m in &matches {
         println!("Similarity {:.3}: {}", m.similarity, m.filename);
     }
