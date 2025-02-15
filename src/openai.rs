@@ -40,7 +40,7 @@ pub async fn find_related_files(query_embedding: Vec<f32>) -> Vec<String> {
     let mut matches: Vec<FileMatch> = file_embeddings
         .iter()
         .map(|(filename, embedding)| {
-            let similarity = cosine_similarity(&query_embedding, embedding);
+            let similarity = bm25_similarity(&query_embedding, embedding);
             FileMatch {
                 filename: filename.clone(),
                 similarity,
@@ -62,16 +62,32 @@ pub async fn find_related_files(query_embedding: Vec<f32>) -> Vec<String> {
         .collect()
 }
 
-fn cosine_similarity(a: &[f32], b: &[f32]) -> f32 {
-    let dot_product: f32 = a.iter().zip(b.iter()).map(|(x, y)| x * y).sum();
-    let norm_a: f32 = a.iter().map(|x| x * x).sum::<f32>().sqrt();
-    let norm_b: f32 = b.iter().map(|x| x * x).sum::<f32>().sqrt();
-    
-    if norm_a == 0.0 || norm_b == 0.0 {
-        0.0
-    } else {
-        dot_product / (norm_a * norm_b)
+fn bm25_similarity(query: &[f32], doc: &[f32]) -> f32 {
+    const K1: f32 = 1.5;  // Term frequency saturation parameter
+    const B: f32 = 0.75;  // Length normalization parameter
+    const EPSILON: f32 = 1e-10;  // Small value to prevent division by zero
+
+    // Calculate average document length (in this case, it's always the embedding dimension)
+    let avg_dl = doc.len() as f32;
+    let doc_len = doc.len() as f32;
+
+    // Calculate BM25 score
+    let mut score = 0.0;
+    for (q, d) in query.iter().zip(doc.iter()) {
+        // Treat the embedding components as term frequencies
+        let tf = d.abs();
+        
+        // IDF-like component using the query values
+        let idf = (q.abs() + EPSILON).ln();
+        
+        // BM25 formula
+        let numerator = tf * (K1 + 1.0);
+        let denominator = tf + K1 * (1.0 - B + B * doc_len / avg_dl);
+        
+        score += idf * numerator / denominator;
     }
+
+    score
 }
 
 #[derive(Debug, Deserialize)]
