@@ -43,6 +43,8 @@ pub async fn get_embedding(text: &str, api_key: &str) -> Result<Vec<f32>, Box<dy
         .send()
         .await?;
 
-    let embedding_response: EmbeddingResponse = response.json().await?;
+    let response_text = response.text().await?;
+    println!("Raw response: {}", response_text);
+    let embedding_response: EmbeddingResponse = serde_json::from_str(&response_text)?;
     Ok(embedding_response.data[0].embedding.clone())
 }
