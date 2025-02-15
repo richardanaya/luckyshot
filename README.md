@@ -1,6 +1,6 @@
 # Luckyshot
 
-A CLI tool for intelligent code generation using RAG (Retrieval Augmented Generation) and file watching.
+A powerful CLI tool that enhances AI coding assistants by intelligently selecting relevant context from your codebase using RAG (Retrieval Augmented Generation).
 
 ## The Problem
 
