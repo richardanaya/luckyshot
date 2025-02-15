@@ -1,7 +1,7 @@
 use clap::{Parser, Subcommand};
 use dotenvy::dotenv;
 use std::env;
-use glob;
+use glob_match::glob_match;
 use std::fs;
 use std::collections::HashMap;
 
@@ -67,10 +67,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("Scanning for files matching pattern: {}", pattern);
             let mut file_embeddings: HashMap<String, Vec<f32>> = HashMap::new();
             
-            for entry in glob::glob(&pattern).expect("Failed to read glob pattern") {
-                match entry {
-                    Ok(path) => {
+            // Recursively get all files in current directory
+            for entry in std::fs::read_dir(".").expect("Failed to read directory") {
+                if let Ok(entry) = entry {
+                    if let Ok(path) = entry.path().canonicalize() {
                         let path_str = path.to_string_lossy().to_string();
+                        // Skip the vectors file itself
+                        if path_str.ends_with(".luckyshot.file.vectors.v1") {
+                            continue;
+                        }
+                        // Only process files that match the pattern
+                        if !glob_match(&pattern, &path_str) {
+                            continue;
+                        }
                         println!("Processing: {}", path_str);
                         
                         match fs::read_to_string(&path) {
