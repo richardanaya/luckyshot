@@ -62,9 +62,9 @@ pub async fn find_related_files(query_embedding: Vec<f32>) -> Vec<String> {
     // Sort by normalized similarity (highest first)
     matches.sort_by(|a, b| b.similarity.partial_cmp(&a.similarity).unwrap());
 
-    // Print matches with normalized similarity scores
+    // Print matches with normalized similarity scores in CSV format
     for m in &matches {
-        println!("Similarity {:.3}: {}", m.similarity, m.filename);
+        println!("{:.3},{}", m.similarity, m.filename);
     }
 
     // Return filenames only
