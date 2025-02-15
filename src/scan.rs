@@ -13,7 +13,7 @@ pub async fn scan_files(pattern: &str, api_key: &str) -> Result<(), Box<dyn std:
             Ok(contents) => {
                 match crate::openai::get_embedding(&contents, api_key).await {
                     Ok(embedding) => {
-                        println!("Got embedding for {} (length {})", path_str, embedding.len());
+                        println!("Got embedding for {}", path_str);
                         file_embeddings.insert(path_str.to_string(), embedding);
                     }
                     Err(e) => eprintln!("Error getting embedding for {}: {}", path_str, e),
