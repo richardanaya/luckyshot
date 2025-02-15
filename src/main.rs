@@ -1,6 +1,3 @@
-fn main() {
-    println!("Hello, world!");
-}
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
