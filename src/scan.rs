@@ -6,7 +6,7 @@ pub async fn scan_files(pattern: &str, api_key: &str) -> Result<(), Box<dyn std:
     println!("Scanning for files matching pattern: {}", pattern);
     let mut file_embeddings: HashMap<String, Vec<f32>> = HashMap::new();
 
-    fn visit_dirs(dir: &std::path::Path, pattern: &str, file_embeddings: &mut HashMap<String, Vec<f32>>, api_key: &str) {
+    async fn visit_dirs(dir: &std::path::Path, pattern: &str, file_embeddings: &mut HashMap<String, Vec<f32>>, api_key: &str) {
         if dir.is_dir() {
             if let Ok(entries) = std::fs::read_dir(dir) {
                 for entry in entries {
@@ -28,7 +28,7 @@ pub async fn scan_files(pattern: &str, api_key: &str) -> Result<(), Box<dyn std:
                                 continue;
                             }
 
-                            process_file(&path, &path_str, file_embeddings, api_key);
+                            process_file(&path, &path_str, file_embeddings, api_key).await;
                         }
                     }
                 }
@@ -36,15 +36,12 @@ pub async fn scan_files(pattern: &str, api_key: &str) -> Result<(), Box<dyn std:
         }
     }
 
-    fn process_file(path: &std::path::Path, path_str: &str, file_embeddings: &mut HashMap<String, Vec<f32>>, api_key: &str) {
+    async fn process_file(path: &std::path::Path, path_str: &str, file_embeddings: &mut HashMap<String, Vec<f32>>, api_key: &str) {
         println!("Processing: {}", path_str);
         
         match fs::read_to_string(path) {
             Ok(contents) => {
-                match tokio::runtime::Runtime::new()
-                    .unwrap()
-                    .block_on(crate::openai::get_embedding(&contents, api_key))
-                {
+                match crate::openai::get_embedding(&contents, api_key).await {
                     Ok(embedding) => {
                         println!("Got embedding for {} (length {})", path_str, embedding.len());
                         file_embeddings.insert(path_str.to_string(), embedding);
@@ -57,7 +54,7 @@ pub async fn scan_files(pattern: &str, api_key: &str) -> Result<(), Box<dyn std:
     }
 
     // Start recursive directory traversal from current directory
-    visit_dirs(std::path::Path::new("."), pattern, &mut file_embeddings, api_key);
+    visit_dirs(std::path::Path::new("."), pattern, &mut file_embeddings, api_key).await;
 
     // Save embeddings to file
     match serde_json::to_string_pretty(&file_embeddings) {
