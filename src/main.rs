@@ -95,7 +95,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                             Err(e) => eprintln!("Error reading file {}: {}", path_str, e),
                         }
                     }
-                },
+                }
                 Err(e) => println!("Error with path: {}", e),
             }
             
