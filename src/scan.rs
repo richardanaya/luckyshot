@@ -1,41 +1,38 @@
 use std::collections::HashMap;
 use std::fs;
 use glob_match::glob_match;
+use std::path::PathBuf;
 
-pub async fn scan_files(pattern: &str, api_key: &str) -> Result<(), Box<dyn std::error::Error>> {
-    println!("Scanning for files matching pattern: {}", pattern);
-    let mut file_embeddings: HashMap<String, Vec<f32>> = HashMap::new();
-
-    async fn visit_dirs(dir: &std::path::Path, pattern: &str, file_embeddings: &mut HashMap<String, Vec<f32>>, api_key: &str) {
-        if dir.is_dir() {
-            if let Ok(entries) = std::fs::read_dir(dir) {
-                for entry in entries {
-                    if let Ok(entry) = entry {
-                        let path = entry.path();
-                        let relative_path = path.strip_prefix(std::env::current_dir().unwrap()).unwrap_or(&path);
-                        let path_str = relative_path.to_string_lossy().to_string();
-                        
-                        if path.is_dir() {
-                            visit_dirs(&path, pattern, file_embeddings, api_key).await;
-                        } else {
-                            
-                            // Skip the vectors file itself
-                            if path_str.ends_with(".luckyshot.file.vectors.v1") {
-                                continue;
-                            }
-                            
-                            // Only process files that match the pattern
-                            if !glob_match(pattern, &path_str) {
-                                continue;
-                            }
-
-                            process_file(&path, &path_str, file_embeddings, api_key).await;
+pub fn find_matching_files(pattern: &str) -> Vec<PathBuf> {
+    let mut matches = Vec::new();
+    let current_dir = std::env::current_dir().unwrap_or_default();
+    
+    fn visit_dir(dir: &std::path::Path, pattern: &str, matches: &mut Vec<PathBuf>) {
+        if let Ok(entries) = std::fs::read_dir(dir) {
+            for entry in entries {
+                if let Ok(entry) = entry {
+                    let path = entry.path();
+                    if path.is_dir() {
+                        visit_dir(&path, pattern, matches);
+                    } else {
+                        let relative_path = path.strip_prefix(&std::env::current_dir().unwrap_or_default())
+                            .unwrap_or(&path);
+                        if glob_match(pattern, &relative_path.to_string_lossy()) {
+                            matches.push(path);
                         }
                     }
                 }
             }
         }
     }
+
+    visit_dir(&current_dir, pattern, &mut matches);
+    matches
+}
+
+pub async fn scan_files(pattern: &str, api_key: &str) -> Result<(), Box<dyn std::error::Error>> {
+    println!("Scanning for files matching pattern: {}", pattern);
+    let mut file_embeddings: HashMap<String, Vec<f32>> = HashMap::new();
 
     async fn process_file(path: &std::path::Path, path_str: &str, file_embeddings: &mut HashMap<String, Vec<f32>>, api_key: &str) {
         println!("Processing: {}", path_str);
@@ -54,9 +51,21 @@ pub async fn scan_files(pattern: &str, api_key: &str) -> Result<(), Box<dyn std:
         }
     }
 
-    // Start recursive directory traversal from current directory
-    let current_dir = std::env::current_dir()?;
-    visit_dirs(&current_dir, pattern, &mut file_embeddings, api_key).await;
+    // Find all matching files
+    let matching_files = find_matching_files(pattern);
+    
+    // Process each file
+    for path in matching_files {
+        let relative_path = path.strip_prefix(std::env::current_dir()?).unwrap_or(&path);
+        let path_str = relative_path.to_string_lossy().to_string();
+        
+        // Skip the vectors file
+        if path_str.ends_with(".luckyshot.file.vectors.v1") {
+            continue;
+        }
+        
+        process_file(&path, &path_str, &mut file_embeddings, api_key).await;
+    }
 
     // Save embeddings to file
     match serde_json::to_string_pretty(&file_embeddings) {
