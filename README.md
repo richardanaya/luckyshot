@@ -2,6 +2,12 @@
 
 A CLI tool for intelligent code generation using RAG (Retrieval Augmented Generation) and file watching.
 
+## The Problem
+
+When using AI coding assistants like GitHub Copilot, Aider, or Continue.dev, one of the biggest challenges is selecting which files to include as context. Including too many files overwhelms the AI with irrelevant information, while missing crucial files leads to incomplete understanding and poor suggestions.
+
+Luckyshot solves this by using AI embeddings to automatically find the most relevant files in your codebase for any given query or task. Instead of manually selecting files or using simple text search, Luckyshot uses semantic search to understand the meaning and relationships between your code files.
+
 ## Features
 
 - File scanning and embedding generation
