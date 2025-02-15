@@ -66,4 +66,5 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("Generating/modifying code for: {}", prompt);
         }
     }
+    Ok(())
 }
