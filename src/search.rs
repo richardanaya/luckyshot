@@ -8,7 +8,8 @@ pub struct FileMatch {
 }
 
 pub async fn find_related_files(
-    query_embedding: Vec<f32>,
+    query_text: &str,
+    api_key: &str,
     filter_similarity: f32,
     verbose: bool,
     file_contents: bool,
@@ -33,14 +34,7 @@ pub async fn find_related_files(
     };
 
     // Perform BM25 ranking
-    let bm25_results = crate::bm25_ranker::rank_documents(
-        &file_embeddings,
-        &query_embedding
-            .iter()
-            .map(|x| x.to_string())
-            .collect::<Vec<_>>()
-            .join(" "),
-    );
+    let bm25_results = crate::bm25_ranker::rank_documents(&file_embeddings, query_text);
 
     println!("\nBM25 ranks:");
     for scored_doc in bm25_results {
@@ -54,7 +48,15 @@ pub async fn find_related_files(
     }
     println!("\nBM25 done");
 
-    // Calculate similarity for each file
+    // Get query embedding and calculate similarity for each file
+    let query_embedding = match crate::openai::get_embedding(query_text, api_key).await {
+        Ok(embedding) => embedding,
+        Err(e) => {
+            eprintln!("Error getting query embedding: {}", e);
+            return Ok(Vec::new());
+        }
+    };
+
     let mut matches: Vec<FileMatch> = file_embeddings
         .iter()
         .map(|embedding| {
