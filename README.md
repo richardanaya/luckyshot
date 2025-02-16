@@ -21,6 +21,10 @@ The hybrid scoring system combines both approaches:
 
 This dual approach helps ensure you don't miss important context when using AI to modify your codebase.
 
+# Warnings!
+
+This tool is alpha and not thoroughly evalulated with real world tests.
+
 ## Features
 
 - File scanning with customizable chunk sizes and overlap
