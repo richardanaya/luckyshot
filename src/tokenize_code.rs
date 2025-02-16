@@ -1,4 +1,11 @@
 use std::path::Path;
+use std::collections::HashSet;
+
+/// Deduplicates tokens while preserving their original order
+pub fn deduplicate_tokens(tokens: Vec<String>) -> Vec<String> {
+    let mut seen = HashSet::new();
+    tokens.into_iter().filter(|token| seen.insert(token.clone())).collect()
+}
 
 /// Tokenizes code into a vector of strings, with special handling for Rust files
 pub fn tokenize_code(input: &str, file_path: &str) -> Vec<String> {
@@ -258,5 +265,29 @@ mod tests {
         ];
         
         assert_eq!(tokens, expected);
+    }
+
+    #[test]
+    fn test_deduplicate_tokens() {
+        let tokens = vec![
+            "fn".to_string(),
+            "main".to_string(),
+            "let".to_string(),
+            "x".to_string(),
+            "let".to_string(),
+            "y".to_string(),
+            "fn".to_string(),
+        ];
+        
+        let deduped = deduplicate_tokens(tokens);
+        let expected = vec![
+            "fn".to_string(),
+            "main".to_string(),
+            "let".to_string(),
+            "x".to_string(),
+            "y".to_string(),
+        ];
+        
+        assert_eq!(deduped, expected);
     }
 }
