@@ -3,7 +3,6 @@ use serde::{Deserialize, Serialize};
 use std::error::Error;
 use std::vec::Vec;
 use std::fs;
-use std::collections::HashMap;
 
 #[derive(Debug)]
 pub struct FileMatch {
@@ -42,7 +41,7 @@ pub async fn find_related_files(query_embedding: Vec<f32>) -> Vec<String> {
         .map(|embedding| {
             let similarity = bm25_similarity(&query_embedding, &embedding.vector);
             FileMatch {
-                filename: filename.clone(),
+                filename: embedding.filename.clone(),
                 similarity,
             }
         })

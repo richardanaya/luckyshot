@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use std::fs;
-use std::path::PathBuf;
 use serde::{Serialize, Deserialize};
 
 #[derive(Serialize, Deserialize)]
@@ -14,7 +13,7 @@ pub async fn scan_files(pattern: &str, api_key: &str, chunk_size: usize, overlap
     println!("Scanning for files matching pattern: {}", pattern);
     let mut file_embeddings: Vec<FileEmbedding> = Vec::new();
 
-    async fn process_file(path: &std::path::Path, path_str: &str, file_embeddings: &mut HashMap<String, Vec<f32>>, api_key: &str) {
+    async fn process_file(path: &std::path::Path, path_str: &str, file_embeddings: &mut Vec<FileEmbedding>, api_key: &str) -> Result<(), Box<dyn std::error::Error>> {
         println!("Processing: {}", path_str);
         
         match fs::read_to_string(path) {
@@ -30,6 +29,7 @@ pub async fn scan_files(pattern: &str, api_key: &str, chunk_size: usize, overlap
                             vector: embedding,
                             last_modified,
                         });
+                        Ok(())
                     }
                     Err(e) => eprintln!("Error getting embedding for {}: {}", path_str, e),
                 }
