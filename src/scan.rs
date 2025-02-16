@@ -155,7 +155,7 @@ pub async fn scan_files(
         process_file(
             &path,
             &path_str,
-            &mut file_embeddings,
+            &mut store.rag_vectors,
             api_key,
             chunk_size,
             overlap_size,

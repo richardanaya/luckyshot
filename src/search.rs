@@ -1,4 +1,4 @@
-use crate::scan::FileEmbedding;
+use crate::scan::{FileEmbedding, FileVectorStore};
 use std::fs;
 
 #[derive(Debug)]
@@ -142,7 +142,7 @@ pub async fn find_related_files(
         }
     } else if file_contents {
         for m in &final_matches {
-            let embedding = file_embeddings
+            let embedding = store.rag_vectors
                 .iter()
                 .find(|e| e.filename == m.filename)
                 .unwrap();
