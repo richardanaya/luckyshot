@@ -22,19 +22,19 @@ struct OpenAIChatChoice {
 }
 
 #[derive(Debug, Serialize)]
-struct AnthropicChatRequest {
+struct ChatRequest {
     model: String,
     messages: Vec<ChatMessage>,
 }
 
 #[derive(Debug, Deserialize)]
-struct AnthropicChatResponse {
-    content: Vec<AnthropicContent>,
+struct ChatResponse {
+    choices: Vec<ChatChoice>,
 }
 
 #[derive(Debug, Deserialize)]
-struct AnthropicContent {
-    text: String,
+struct ChatChoice {
+    message: ChatMessage,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -170,8 +170,8 @@ struct Usage {
 
 pub async fn get_chat_completion(prompt: &str, api_key: &str) -> Result<String, Box<dyn Error>> {
     let client = Client::new();
-    let request = AnthropicChatRequest {
-        model: "claude-3-opus-20240229".to_string(),
+    let request = ChatRequest {
+        model: "gpt-4-turbo-preview".to_string(),
         messages: vec![ChatMessage {
             role: "user".to_string(),
             content: prompt.to_string(),
@@ -187,8 +187,8 @@ pub async fn get_chat_completion(prompt: &str, api_key: &str) -> Result<String, 
         .send()
         .await?;
 
-    let chat_response: AnthropicChatResponse = response.json().await?;
-    Ok(chat_response.content[0].text.clone())
+    let chat_response: ChatResponse = response.json().await?;
+    Ok(chat_response.choices[0].message.content.clone())
 }
 
 pub async fn get_openai_chat_completion(prompt: &str, system_prompt: &str, api_key: &str) -> Result<String, Box<dyn Error>> {
