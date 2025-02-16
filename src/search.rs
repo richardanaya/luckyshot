@@ -1,4 +1,4 @@
-use crate::scan::FileVectorStore;
+use crate::scan::{RagEmbeddedFileChunk, FileVectorStore};
 use std::fs;
 
 #[derive(Debug)]
