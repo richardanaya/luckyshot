@@ -93,7 +93,8 @@ pub async fn scan_files(
                                 .as_secs();
 
                             // Generate BM25 vector for the same content
-                            let bm25_vec = crate::bm25_embedder::create_bm25_vector(&content_to_embed);
+                            let bm25_vec =
+                                crate::bm25_embedder::create_bm25_vector(&content_to_embed, 200.0);
 
                             file_embeddings.push(FileEmbedding {
                                 filename: path_str.to_string(),
@@ -166,11 +167,11 @@ pub async fn scan_files(
                     "Successfully saved vectors for {} chunks",
                     file_embeddings.len()
                 );
-                
+
                 // Print celebratory figlet
                 use colored::*;
                 use figlet_rs::FIGfont;
-                
+
                 let standard_font = FIGfont::standard().unwrap();
                 let figure = standard_font.convert("Yee-haw!").unwrap();
                 println!("\n{}", figure.to_string().bright_yellow());

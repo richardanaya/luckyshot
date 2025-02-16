@@ -34,7 +34,7 @@ pub async fn find_related_files(
     };
 
     // Perform BM25 ranking
-    let bm25_results = crate::bm25_ranker::rank_documents(&file_embeddings, query_text);
+    /* let bm25_results = crate::bm25_ranker::rank_documents(&file_embeddings, query_text);
 
     println!("\nBM25 ranks:");
     for scored_doc in bm25_results {
@@ -46,7 +46,7 @@ pub async fn find_related_files(
             );
         }
     }
-    println!("\nBM25 done");
+    println!("\nBM25 done");*/
 
     // Get query embedding and calculate similarity for each file
     let query_embedding = match crate::openai::get_embedding(query_text, api_key).await {

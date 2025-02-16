@@ -1,5 +1,5 @@
-use bm25::{EmbedderBuilder, Tokenizer};
 use crate::tokenize_code::tokenize_code;
+use bm25::{EmbedderBuilder, Tokenizer};
 
 #[derive(Debug)]
 pub struct Bm25Vector {
@@ -17,8 +17,8 @@ impl Tokenizer for CodeTokenizer {
     }
 }
 
-pub fn create_bm25_vector(text: &str) -> Bm25Vector {
-    let embedder = EmbedderBuilder::<u32, CodeTokenizer>::with_avgdl(250.0).build();
+pub fn create_bm25_vector(text: &str, avgdl: f32) -> Bm25Vector {
+    let embedder = EmbedderBuilder::<u32, CodeTokenizer>::with_avgdl(avgdl).build();
     let embedding = embedder.embed(text);
     Bm25Vector {
         indices: embedding.indices().cloned().collect(),
