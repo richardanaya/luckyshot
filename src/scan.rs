@@ -5,6 +5,7 @@ use std::fs;
 pub struct FileEmbedding {
     pub filename: String,
     pub vector: Vec<f32>,
+    pub bm25_vector: Vec<f32>,
     pub last_modified: u64,
     pub chunk_offset: usize, // Starting position of chunk in file
     pub chunk_size: usize,   // Size of this chunk (might be smaller for last chunk)
@@ -90,9 +91,13 @@ pub async fn scan_files(
                                 .duration_since(std::time::UNIX_EPOCH)?
                                 .as_secs();
 
+                            // Generate BM25 vector for the same content
+                            let bm25_vector = crate::bm25_embedder::create_bm25_vector(&content_to_embed);
+
                             file_embeddings.push(FileEmbedding {
                                 filename: path_str.to_string(),
                                 vector: embedding,
+                                bm25_vector,
                                 last_modified,
                                 chunk_offset: offset,
                                 chunk_size: chunk_content.len(),
