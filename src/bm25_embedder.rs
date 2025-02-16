@@ -1,7 +1,16 @@
 use bm25::{DefaultTokenizer, EmbedderBuilder};
 
-pub fn create_bm25_vector(text: &str) -> Vec<u32> {
+#[derive(Debug)]
+pub struct Bm25Vector {
+    pub indices: Vec<u32>,
+    pub values: Vec<f32>,
+}
+
+pub fn create_bm25_vector(text: &str) -> Bm25Vector {
     let embedder = EmbedderBuilder::<u32, DefaultTokenizer>::with_avgdl(1.0).build();
     let embedding = embedder.embed(text);
-    embedding.indices().cloned().collect::<Vec<_>>()
+    Bm25Vector {
+        indices: embedding.indices().cloned().collect(),
+        values: embedding.values().cloned().collect(),
+    }
 }
