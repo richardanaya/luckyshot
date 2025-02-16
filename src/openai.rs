@@ -171,7 +171,7 @@ struct Usage {
 pub async fn get_chat_completion(prompt: &str, api_key: &str) -> Result<String, Box<dyn Error>> {
     let client = Client::new();
     let request = ChatRequest {
-        model: "gpt-4-turbo-preview".to_string(),
+        model: "gpt-4o-mini".to_string(),
         messages: vec![ChatMessage {
             role: "user".to_string(),
             content: prompt.to_string(),
