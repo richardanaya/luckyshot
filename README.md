@@ -3,7 +3,7 @@
   <img src="https://github.com/user-attachments/assets/b58cd03b-1cd8-4d97-b0e1-5498c83df2a3" alt="Description" width="300">
 </p>
 
-A powerful CLI tool that enhances code understanding by using RAG (Retrieval Augmented Generation) to find and analyze relevant files in your codebase.
+A powerful CLI tool that enhances code understanding by using RAG (Retrieval Augmented Generation) to find relevant files in your codebase.
 
 ## Features
 
