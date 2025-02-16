@@ -77,10 +77,7 @@ pub async fn scan_files(
                             .duration_since(std::time::UNIX_EPOCH)?
                             .as_secs();
                         let size = metadata.len();
-                        format!(
-                            "File: {}\nLast Modified: {}\nSize: {}\nContent:\n{}",
-                            path_str, modified, size, chunk_content
-                        )
+                        crate::metadata::prepend_metadata(path_str, modified, size, &chunk_content)
                     } else {
                         chunk_content.clone()
                     };

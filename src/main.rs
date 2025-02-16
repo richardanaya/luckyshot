@@ -5,6 +5,7 @@ use std::io::Read;
 
 mod bm25;
 mod files;
+mod metadata;
 mod openai;
 mod scan;
 mod search;
