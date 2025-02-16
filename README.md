@@ -36,6 +36,9 @@ luckyshot scan --chunk-size 1000 --overlap-size 100 "src/**/*.rs"
 
 # Include file metadata in embeddings
 luckyshot scan --embed-metadata "*.{rs,md}"
+
+# Scan with all options
+luckyshot scan --chunk-size 1000 --overlap-size 100 --embed-metadata "**/*.rs"
 ```
 
 The scan command:
@@ -48,21 +51,32 @@ The scan command:
 To find files related to a topic or question:
 
 ```bash
-# Using command line arguments
+# Basic file suggestion
 luckyshot suggest-files "how does the scanning work?"
 
 # Using piped input
 echo "how does error handling work?" | luckyshot suggest-files
 
+# Filter results by similarity score (0.0 to 1.0)
+luckyshot suggest-files --filter-similarity 0.5 "error handling"
+
+# Show detailed information including similarity scores
+luckyshot suggest-files --verbose "file scanning"
+
+# Show file contents of matches
+luckyshot suggest-files --file-contents "metadata handling"
+
+# Limit number of results
+luckyshot suggest-files --count 5 "openai"
+
+# Combine options
+luckyshot suggest-files --verbose --file-contents --filter-similarity 0.7 --count 3 "embedding"
+
 # Chain commands Unix-style
-# This will:
-# 1. Ask about OpenAI URLs
-# 2. Expand it with Rust expertise context
-# 3. Find relevant files
 echo "what openai url am I using" | \
   luckyshot expand "you are a rust expert who describes their \
      question and the files you are looking for" | \
-  luckyshot suggest-files
+  luckyshot suggest-files --verbose
 ```
 
 This will:
