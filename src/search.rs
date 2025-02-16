@@ -94,8 +94,23 @@ pub async fn find_related_files(query_embedding: Vec<f32>, filter_similarity: f3
                 let start = embedding.chunk_offset;
                 let end = start + embedding.chunk_size;
                 if end <= contents.len() {
+                    let chunk_content = &contents[start..end];
+                    
+                    // If metadata was included in the embedding, reconstruct it for display
+                    let display_content = if embedding.has_metadata {
+                        let metadata = std::fs::metadata(&embedding.filename)?;
+                        let modified = metadata
+                            .modified()?
+                            .duration_since(std::time::UNIX_EPOCH)?
+                            .as_secs();
+                        let size = metadata.len();
+                        crate::metadata::prepend_metadata(&embedding.filename, modified, size, chunk_content)
+                    } else {
+                        chunk_content.to_string()
+                    };
+
                     println!("\n--- Content from {} ---", embedding.filename);
-                    println!("{}", &contents[start..end]);
+                    println!("{}", display_content);
                     println!("--- End content ---\n");
                 }
             }
