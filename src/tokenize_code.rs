@@ -4,11 +4,87 @@ use std::path::Path;
 pub fn tokenize_code(input: &str, file_path: &str) -> Vec<String> {
     let path = Path::new(file_path);
     if let Some(extension) = path.extension() {
-        if extension == "rs" {
-            return tokenize_rust_code(input);
+        match extension.to_str().unwrap_or("") {
+            "rs" => return tokenize_rust_code(input),
+            "html" | "htm" => return tokenize_html_code(input),
+            _ => return tokenize_generic_code(input),
         }
     }
     tokenize_generic_code(input)
+}
+
+/// Tokenizes HTML code into a vector of strings
+fn tokenize_html_code(input: &str) -> Vec<String> {
+    let mut tokens = Vec::new();
+    let mut current_token = String::new();
+    let mut chars = input.chars().peekable();
+    let mut in_tag = false;
+
+    while let Some(&c) = chars.peek() {
+        match c {
+            '<' => {
+                if !current_token.is_empty() {
+                    tokens.push(current_token.clone());
+                    current_token.clear();
+                }
+                in_tag = true;
+                chars.next();
+            },
+            '>' => {
+                if !current_token.is_empty() {
+                    tokens.push(current_token.clone());
+                    current_token.clear();
+                }
+                in_tag = false;
+                chars.next();
+            },
+            c if c.is_whitespace() => {
+                if !current_token.is_empty() {
+                    tokens.push(current_token.clone());
+                    current_token.clear();
+                }
+                chars.next();
+            },
+            '"' | '\'' => {
+                if !current_token.is_empty() {
+                    tokens.push(current_token.clone());
+                    current_token.clear();
+                }
+                chars.next();
+                // Collect the attribute value
+                while let Some(&next_c) = chars.peek() {
+                    chars.next();
+                    if next_c == c {
+                        break;
+                    }
+                    current_token.push(next_c);
+                }
+                if !current_token.is_empty() {
+                    tokens.push(current_token.clone());
+                    current_token.clear();
+                }
+            },
+            '=' | '/' => {
+                if !current_token.is_empty() {
+                    tokens.push(current_token.clone());
+                    current_token.clear();
+                }
+                chars.next();
+            },
+            _ => {
+                current_token.push(c);
+                chars.next();
+            }
+        }
+    }
+
+    if !current_token.is_empty() {
+        tokens.push(current_token);
+    }
+
+    tokens.into_iter()
+        .filter(|s| !s.is_empty())
+        .collect()
 }
 
 /// Tokenizes generic code into a vector of strings
@@ -161,6 +237,27 @@ mod tests {
             "return", "a", "+", "b",
             "const", "result", "=", "calculateSum", "10", "20",
             "console", "log", "Result", "result"
+        ];
+        
+        assert_eq!(tokens, expected);
+    }
+
+    #[test]
+    fn test_tokenize_html_code() {
+        let code = r#"
+            <div class="container">
+                <h1>Hello World</h1>
+                <p id="main-text">This is a test</p>
+                <input type="text" value="search" />
+            </div>
+        "#;
+        
+        let tokens = tokenize_code(code, "test.html");
+        let expected = vec![
+            "div", "class", "container",
+            "h1", "Hello", "World", "h1",
+            "p", "id", "main-text", "This", "is", "a", "test", "p",
+            "input", "type", "text", "value", "search"
         ];
         
         assert_eq!(tokens, expected);
