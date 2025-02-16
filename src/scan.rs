@@ -160,6 +160,16 @@ pub async fn scan_files(
                     "Successfully saved vectors for {} chunks",
                     file_embeddings.len()
                 );
+                
+                // Print celebratory figlet
+                use colored::*;
+                use figlet_rs::FIGfont;
+                
+                if let Ok(standard_font) = FIGfont::standard() {
+                    if let Ok(figure) = standard_font.convert("Yee-haw!") {
+                        println!("\n{}", figure.to_string().bright_yellow());
+                    }
+                }
             }
         }
         Err(e) => eprintln!("Error serializing vectors: {}", e),
