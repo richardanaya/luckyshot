@@ -21,7 +21,7 @@ pub fn rank_documents(store: &FileVectorStore, query: &str) -> Vec<ScoredDocumen
     println!("\n=== BM25 Ranking Debug ===");
     println!(
         "Ranking {} documents against query: {}",
-        store.rag_vectors.len(),
+        store.bm25_files.len(),
         query
     );
 
@@ -29,12 +29,12 @@ pub fn rank_documents(store: &FileVectorStore, query: &str) -> Vec<ScoredDocumen
     let mut scorer = Scorer::<u32>::new();
 
     // Add each document to the scorer with its index as ID
-    for (i, e) in store.rag_vectors.iter().enumerate() {
+    for (i, e) in store.bm25_files.iter().enumerate() {
         let emb =
             create_embedding_from_indices_and_values(e.bm25_indices.clone(), e.bm25_values.clone());
         println!(
             "Adding document {} to scorer with {} tokens",
-            store.rag_vectors[i].filename,
+            store.bm25_files[i].filename,
             e.bm25_indices.len()
         );
         scorer.upsert(&(i as u32), emb);

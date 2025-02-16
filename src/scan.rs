@@ -46,6 +46,7 @@ pub async fn scan_files(
     println!("Scanning for files matching pattern: {}", pattern);
     let mut store = FileVectorStore {
         rag_vectors: Vec::new(),
+        bm25_files: Vec::new(),
         pattern: pattern.to_string(),
         chunk_size: chunk_size,
         overlap_size: overlap_size,
@@ -94,70 +95,76 @@ pub async fn scan_files(
     ) -> Result<(), Box<dyn std::error::Error>> {
         println!("Processing: {}", path_str);
 
-        match fs::read_to_string(path) {
-            Ok(contents) => {
-                let chunks = create_chunks(&contents, chunk_size, overlap_size);
+        // Read the file contents
+        let contents = fs::read_to_string(path)?;
+        let metadata = fs::metadata(path)?;
+        let last_modified = metadata
+            .modified()?
+            .duration_since(std::time::UNIX_EPOCH)?
+            .as_secs();
 
-                for (offset, chunk_content) in chunks {
-                    let content_to_embed = if embed_metadata {
-                        // Include file metadata in the content
-                        let metadata = fs::metadata(path)?;
-                        let modified = metadata
-                            .modified()?
-                            .duration_since(std::time::UNIX_EPOCH)?
-                            .as_secs();
-                        let size = metadata.len();
-                        crate::metadata::prepend_metadata(path_str, modified, size, &chunk_content)
+        // Phase 1: Create BM25 embedding for the entire file
+        let content_to_embed = if embed_metadata {
+            let size = metadata.len();
+            crate::metadata::prepend_metadata(path_str, last_modified, size, &contents)
+        } else {
+            contents.clone()
+        };
+
+        // Generate BM25 vector for the entire file
+        let bm25_vec = crate::bm25_embedder::create_bm25_vector(&content_to_embed, 200.0);
+
+        // Store the BM25 embedding
+        store.bm25_files.push(Bm25EmbeddedFile {
+            filename: path_str.to_string(),
+            bm25_indices: bm25_vec.indices,
+            bm25_values: bm25_vec.values,
+            last_modified,
+            has_metadata: embed_metadata,
+        });
+
+        // Phase 2: Create RAG embeddings for chunks
+        let chunks = create_chunks(&contents, chunk_size, overlap_size);
+
+        for (offset, chunk_content) in chunks {
+            let chunk_to_embed = if embed_metadata {
+                let size = metadata.len();
+                crate::metadata::prepend_metadata(path_str, last_modified, size, &chunk_content)
+            } else {
+                chunk_content.clone()
+            };
+
+            match crate::openai::get_embedding(&chunk_to_embed, api_key).await {
+                Ok(embedding) => {
+                    store.rag_vectors.push(RagEmbeddedFileChunk {
+                        filename: path_str.to_string(),
+                        vector: embedding,
+                        bm25_indices: Vec::new(), // Empty since BM25 is now per-file
+                        bm25_values: Vec::new(),  // Empty since BM25 is now per-file
+                        last_modified,
+                        chunk_offset: offset,
+                        chunk_size: chunk_content.len(),
+                        is_full_file: chunk_size == 0,
+                        has_metadata: embed_metadata,
+                    });
+
+                    if chunk_size > 0 {
+                        println!(
+                            "Got embedding for {} (chunk offset: {})",
+                            path_str, offset
+                        );
                     } else {
-                        chunk_content.clone()
-                    };
-
-                    match crate::openai::get_embedding(&content_to_embed, api_key).await {
-                        Ok(embedding) => {
-                            let metadata = fs::metadata(path)?;
-                            let last_modified = metadata
-                                .modified()?
-                                .duration_since(std::time::UNIX_EPOCH)?
-                                .as_secs();
-
-                            // Generate BM25 vector for the same content
-                            let bm25_vec =
-                                crate::bm25_embedder::create_bm25_vector(&content_to_embed, 200.0);
-
-                            store.rag_vectors.push(RagEmbeddedFileChunk {
-                                filename: path_str.to_string(),
-                                vector: embedding,
-                                bm25_indices: bm25_vec.indices,
-                                bm25_values: bm25_vec.values,
-                                last_modified,
-                                chunk_offset: offset,
-                                chunk_size: chunk_content.len(),
-                                is_full_file: chunk_size == 0,
-                                has_metadata: embed_metadata,
-                            });
-
-                            if chunk_size > 0 {
-                                println!(
-                                    "Got embedding for {} (chunk offset: {})",
-                                    path_str, offset
-                                );
-                            } else {
-                                println!("Got embedding for {}", path_str);
-                            }
-                        }
-                        Err(e) => {
-                            eprintln!("Error getting embedding for {}: {}", path_str, e);
-                            return Err(e);
-                        }
+                        println!("Got embedding for {}", path_str);
                     }
                 }
-                Ok(())
-            }
-            Err(e) => {
-                eprintln!("Error reading file {}: {}", path_str, e);
-                Err(Box::new(e))
+                Err(e) => {
+                    eprintln!("Error getting embedding for {}: {}", path_str, e);
+                    return Err(e);
+                }
             }
         }
+
+        Ok(())
     }
 
     // Find all matching files
