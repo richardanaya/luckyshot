@@ -131,12 +131,6 @@ pub async fn scan_files(
         // Tokenize and deduplicate tokens for BM25
         let tokens = get_tokenizer().tokenize(&content_to_embed);
 
-        // Update token counts for avgdl
-        *total_tokens += tokens.len();
-        *doc_count += 1;
-        store.bm25_avgdl = *total_tokens as f32 / *doc_count as f32;
-        store.doc_count = *doc_count;
-
         // Store the BM25 embedding
         store.bm25_files.push(Bm25EmbeddedFile {
             filename: path_str.to_string(),
