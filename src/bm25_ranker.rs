@@ -8,12 +8,12 @@ pub fn rank_documents(embeddings: &[FileEmbedding], query: &str) -> Vec<ScoredDo
 
     // Add each document to the scorer with its index as ID
     for (i, e) in embeddings.iter().enumerate() {
-        scorer.upsert(&i, &e.bm25_vector);
+        scorer.upsert(&i, e.bm25_vector.clone().into());
     }
 
     // Create query embedding
     let query_embedding = create_bm25_vector(query);
 
     // Get matches sorted by score
-    scorer.matches(&query_embedding)
+    scorer.matches(&query_embedding.into())
 }
