@@ -159,7 +159,7 @@ mod tests {
         let expected = vec![
             "function", "calculateSum", "a", "b",
             "return", "a", "+", "b",
-            "const", "result", "calculateSum", "10", "20",
+            "const", "result", "=", "calculateSum", "10", "20",
             "console", "log", "Result", "result"
         ];
         
