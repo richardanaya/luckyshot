@@ -100,47 +100,46 @@ pub async fn find_related_files(query_embedding: Vec<f32>, filter_similarity: f3
     // Sort by normalized similarity (highest first)
     matches.sort_by(|a, b| b.similarity.partial_cmp(&a.similarity).unwrap());
 
-    // Filter matches by similarity threshold and limit count if specified
-    let filtered_matches: Vec<_> = matches.iter()
+    // First filter by similarity threshold
+    let similarity_filtered: Vec<_> = matches.iter()
         .filter(|m| m.similarity >= filter_similarity)
-        .take(if count > 0 { count } else { matches.len() })
         .collect();
 
+    // Then limit by count if specified
+    let final_matches: Vec<_> = if count > 0 {
+        similarity_filtered.iter().take(count).cloned().collect()
+    } else {
+        similarity_filtered
+    };
+
     // Return early if no matches
-    if filtered_matches.is_empty() {
+    if final_matches.is_empty() {
         return Vec::new();
     }
 
-    // Print header for verbose output
+    // Print results according to flags
     if verbose {
         println!("Score,File,Type,Offset,Size");
-    }
-
-    // Return filenames only from filtered matches and print their details
-    let result: Vec<String> = filtered_matches.iter()
-        .map(|m| {
+        for m in &final_matches {
             let embedding = file_embeddings.iter()
                 .find(|e| e.filename == m.filename)
                 .unwrap();
-            
-            if verbose {
-                println!("{:.3},{},{},{},{}",
-                    m.similarity,
-                    m.filename,
-                    if embedding.is_full_file { "full" } else { "chunk" },
-                    embedding.chunk_offset,
-                    embedding.chunk_size
-                );
-            } else {
-                println!("{}", m.filename);
-            }
-            m.filename.clone()
-        })
-        .collect();
+            println!("{:.3},{},{},{},{}",
+                m.similarity,
+                m.filename,
+                if embedding.is_full_file { "full" } else { "chunk" },
+                embedding.chunk_offset,
+                embedding.chunk_size
+            );
+        }
+    } else {
+        for m in &final_matches {
+            println!("{}", m.filename);
+        }
+    }
 
-    // Print file contents for filtered matches
     if file_contents {
-        for m in &filtered_matches {
+        for m in &final_matches {
             let embedding = file_embeddings.iter()
                 .find(|e| e.filename == m.filename)
                 .unwrap();
@@ -156,8 +155,9 @@ pub async fn find_related_files(query_embedding: Vec<f32>, filter_similarity: f3
             }
         }
     }
-    
-    result
+
+    // Return just the filenames
+    final_matches.iter().map(|m| m.filename.clone()).collect()
 }
 
 fn bm25_similarity(query: &[f32], doc: &[f32]) -> f32 {
