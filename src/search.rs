@@ -102,9 +102,11 @@ pub async fn find_related_files(
     let max_bm25 = max_extent;
 
     // Normalize BM25 scores to -1 to 1 range
-    for (i, m) in matches.iter_mut().enumerate() {
-        let bm25_score = bm25_results[i].score;
-        m.similarity = (bm25_score - min_bm25) / (max_bm25 - min_bm25) * 2.0 - 1.0;
+    for m in matches.iter_mut() {
+        // Find corresponding BM25 score by matching filename
+        if let Some(bm25_result) = bm25_results.iter().find(|r| r.id.to_string() == m.filename) {
+            m.similarity = (bm25_result.score - min_bm25) / (max_bm25 - min_bm25) * 2.0 - 1.0;
+        }
     }
 
     // for each missing file in bm25_results, add it to the matches with a similarity of 0
