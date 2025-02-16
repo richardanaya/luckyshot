@@ -49,6 +49,7 @@ pub async fn scan_files(pattern: &str, api_key: &str, chunk_size: usize, overlap
         api_key: &str,
         chunk_size: usize,
         overlap_size: usize,
+        embed_metadata: bool,
     ) -> Result<(), Box<dyn std::error::Error>> {
         println!("Processing: {}", path_str);
     
@@ -118,7 +119,7 @@ pub async fn scan_files(pattern: &str, api_key: &str, chunk_size: usize, overlap
             continue;
         }
         
-        process_file(&path, &path_str, &mut file_embeddings, api_key, chunk_size, overlap_size).await?;
+        process_file(&path, &path_str, &mut file_embeddings, api_key, chunk_size, overlap_size, embed_metadata).await?;
     }
 
     // Save embeddings to file
