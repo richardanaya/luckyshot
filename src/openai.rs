@@ -134,22 +134,29 @@ pub async fn find_related_files(query_embedding: Vec<f32>, filter_similarity: f3
             } else {
                 println!("{}", m.filename);
             }
-
-            if file_contents {
-                if let Ok(contents) = std::fs::read_to_string(&embedding.filename) {
-                    let start = embedding.chunk_offset;
-                    let end = start + embedding.chunk_size;
-                    if end <= contents.len() {
-                        println!("\n--- Content from {} ---", embedding.filename);
-                        println!("{}", &contents[start..end]);
-                        println!("--- End content ---\n");
-                    }
-                }
-            }
-            
             m.filename.clone()
         })
         .collect();
+
+    // Print file contents for filtered matches
+    if file_contents {
+        for m in &filtered_matches {
+            let embedding = file_embeddings.iter()
+                .find(|e| e.filename == m.filename)
+                .unwrap();
+            
+            if let Ok(contents) = std::fs::read_to_string(&embedding.filename) {
+                let start = embedding.chunk_offset;
+                let end = start + embedding.chunk_size;
+                if end <= contents.len() {
+                    println!("\n--- Content from {} ---", embedding.filename);
+                    println!("{}", &contents[start..end]);
+                    println!("--- End content ---\n");
+                }
+            }
+        }
+    }
+    
     result
 }
 
