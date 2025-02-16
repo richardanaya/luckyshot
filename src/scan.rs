@@ -14,13 +14,9 @@ pub struct FileVectorStore {
 #[derive(Serialize, Deserialize)]
 pub struct Bm25EmbeddedFile {
     pub filename: String,
-    pub vector: Vec<f32>,
     pub bm25_indices: Vec<u32>,
     pub bm25_values: Vec<f32>,
     pub last_modified: u64,
-    pub chunk_offset: usize, // Starting position of chunk in file
-    pub chunk_size: usize,   // Size of this chunk (might be smaller for last chunk)
-    pub is_full_file: bool,  // Whether this is a full file embedding or a chunk
     pub has_metadata: bool,  // Whether metadata was included in the embedding
 }
 
