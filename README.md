@@ -47,6 +47,15 @@ luckyshot suggest-files "how does the scanning work?"
 
 # Using piped input
 echo "how does error handling work?" | luckyshot suggest-files
+
+# Chain commands Unix-style
+# This will:
+# 1. Ask about OpenAI URLs
+# 2. Expand it with Rust expertise context
+# 3. Find relevant files
+echo "what openai url am I using" | \
+  luckyshot expand "you are a rust expert who describes their question and the files you are looking for" | \
+  luckyshot suggest-files
 ```
 
 This will:
