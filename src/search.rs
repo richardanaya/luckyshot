@@ -65,7 +65,7 @@ pub async fn find_related_files(
     if debug {
         // print out the BM25 results
         println!("\nBM25 ranks:");
-        for scored_doc in bm25_results {
+        for scored_doc in &bm25_results {
             let doc_index = scored_doc.id as usize;
             if doc_index < store.bm25_files.len() {
                 println!(
@@ -84,6 +84,42 @@ pub async fn find_related_files(
         println!("\n");
     }
 
+    // I want you to normalize the BM25 numbers, but I need you to do it in way that gives range 1 to -1
+    // Find min and max BM25 scores
+    let min_bm25 = bm25_results
+        .iter()
+        .map(|m| m.score)
+        .fold(f32::INFINITY, f32::min);
+    let max_bm25 = bm25_results
+        .iter()
+        .map(|m| m.score)
+        .fold(f32::NEG_INFINITY, f32::max);
+    // greatest
+    let min_abs = min_bm25.abs();
+    let max_abs = max_bm25.abs();
+    let max_extent = min_abs.max(max_abs);
+    let min_bm25 = -max_extent;
+    let max_bm25 = max_extent;
+
+    // Normalize BM25 scores to -1 to 1 range
+    for (i, m) in matches.iter_mut().enumerate() {
+        let bm25_score = bm25_results[i].score;
+        m.similarity = (bm25_score - min_bm25) / (max_bm25 - min_bm25) * 2.0 - 1.0;
+    }
+
+    // for each missing file in bm25_results, add it to the matches with a similarity of 0
+    for bm25_result in &bm25_results {
+        if !matches
+            .iter()
+            .any(|m| m.filename == bm25_result.id.to_string())
+        {
+            matches.push(FileMatch {
+                filename: bm25_result.id.to_string(),
+                similarity: 0.0,
+            });
+        }
+    }
+
     // Find min and max similarities for normalization
     let min_similarity = matches
         .iter()
@@ -98,6 +134,21 @@ pub async fn find_related_files(
     if (max_similarity - min_similarity).abs() > f32::EPSILON {
         for m in &mut matches {
             m.similarity = (m.similarity - min_similarity) / (max_similarity - min_similarity);
+        }
+    }
+
+    if debug {
+        // print out the normalized bm25
+        println!("Normalized BM25:");
+        for m in &matches {
+            println!("{} {}", m.similarity, m.filename);
+        }
+        println!("\n");
+
+        // print out the normalized rag
+        println!("Normalized RAG:");
+        for m in &matches {
+            println!("{} {}", m.similarity, m.filename);
         }
     }
 
