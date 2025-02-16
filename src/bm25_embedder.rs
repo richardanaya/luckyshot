@@ -13,7 +13,7 @@ struct CodeTokenizer;
 // Tokenize on occurrences of "T"
 impl Tokenizer for CodeTokenizer {
     fn tokenize(&self, input_text: &str) -> Vec<String> {
-        tokenize_code(input_text)
+        tokenize_code(input_text, "input.rs")
     }
 }
 
