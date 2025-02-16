@@ -105,7 +105,7 @@ mod tests {
         let expected = vec![
             "derive", "Debug", "struct", "Point", "T",
             "x", "T", "y", "T", "impl", "T", "Point",
-            "T", "fn", "new", "x", "T", "y", "T", "Self",
+            "T", "fn", "new", "x", "T", "y", "T", "->", "Self",
             "Point", "x", "y", "fn", "main", "let", "point",
             "Point", "new", "10.5", "20.0", "println",
             "Point", "point"
