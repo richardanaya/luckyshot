@@ -103,8 +103,8 @@ pub async fn scan_files(
         chunk_size: usize,
         overlap_size: usize,
         embed_metadata: bool,
-        total_tokens: &mut usize,
-        doc_count: &mut usize,
+        _total_tokens: &mut usize,
+        _doc_count: &mut usize,
     ) -> Result<(), Box<dyn std::error::Error>> {
         println!("Processing: {}", path_str);
 

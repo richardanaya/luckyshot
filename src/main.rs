@@ -112,6 +112,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             prompt,
             filter_similarity,
             verbose,
+            debug,
             file_contents,
             count,
         } => {
