@@ -55,6 +55,10 @@ enum Commands {
         #[arg(long, default_value = "false")]
         verbose: bool,
 
+        /// Show debug information including BM25 rankings
+        #[arg(long, default_value = "false")]
+        debug: bool,
+
         /// Show the actual contents of matched files/chunks
         #[arg(long, default_value = "false")]
         file_contents: bool,
@@ -139,6 +143,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 &api_key,
                 filter_similarity,
                 verbose,
+                debug,
                 file_contents,
                 count,
             )

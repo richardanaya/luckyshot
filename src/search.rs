@@ -12,6 +12,7 @@ pub async fn find_related_files(
     api_key: &str,
     filter_similarity: f32,
     verbose: bool,
+    debug: bool,
     file_contents: bool,
     count: usize,
 ) -> Result<Vec<String>, Box<dyn std::error::Error>> {
@@ -36,17 +37,19 @@ pub async fn find_related_files(
     // Perform BM25 ranking
     let bm25_results = crate::bm25_ranker::rank_documents(&store, query_text, store.bm25_avgdl);
 
-    println!("\nBM25 ranks:");
-    for scored_doc in bm25_results {
-        let doc_index = scored_doc.id as usize;
-        if doc_index < store.bm25_files.len() {
-            println!(
-                "{:.3}: {}",
-                scored_doc.score, store.bm25_files[doc_index].filename
-            );
+    if debug {
+        println!("\nBM25 ranks:");
+        for scored_doc in bm25_results {
+            let doc_index = scored_doc.id as usize;
+            if doc_index < store.bm25_files.len() {
+                println!(
+                    "{:.3}: {}",
+                    scored_doc.score, store.bm25_files[doc_index].filename
+                );
+            }
         }
+        println!("\nBM25 done");
     }
-    println!("\nBM25 done");
 
     // Get query embedding and calculate similarity for each file
     let query_embedding = match crate::openai::get_embedding(query_text, api_key).await {
