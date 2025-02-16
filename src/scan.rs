@@ -5,7 +5,7 @@ use std::fs;
 pub struct FileEmbedding {
     pub filename: String,
     pub vector: Vec<f32>,
-    pub bm25_vector: Vec<f32>,
+    pub bm25_vector: Vec<u32>,
     pub last_modified: u64,
     pub chunk_offset: usize, // Starting position of chunk in file
     pub chunk_size: usize,   // Size of this chunk (might be smaller for last chunk)
