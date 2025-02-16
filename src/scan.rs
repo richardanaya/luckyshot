@@ -190,7 +190,27 @@ pub async fn scan_files(
     // Find all matching files
     let matching_files = crate::files::find_matching_files(pattern);
 
-    // Process each file
+    // First pass: calculate true average document length
+    println!("Calculating average document length...");
+    for path in matching_files.iter() {
+        let relative_path = path.strip_prefix(std::env::current_dir()?).unwrap_or(&path);
+        let path_str = relative_path.to_string_lossy().to_string();
+
+        // Skip the vectors file
+        if path_str.ends_with(".luckyshot.file.vectors.v1") {
+            continue;
+        }
+
+        let contents = fs::read_to_string(path)?;
+        let tokens = get_tokenizer().tokenize(&contents);
+        total_tokens += tokens.len();
+        doc_count += 1;
+    }
+    store.bm25_avgdl = total_tokens as f32 / doc_count as f32;
+    store.doc_count = doc_count;
+    println!("Average document length: {:.2}", store.bm25_avgdl);
+
+    // Second pass: process each file
     for path in matching_files {
         let relative_path = path.strip_prefix(std::env::current_dir()?).unwrap_or(&path);
         let path_str = relative_path.to_string_lossy().to_string();
