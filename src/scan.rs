@@ -101,6 +101,8 @@ pub async fn scan_files(
         chunk_size: usize,
         overlap_size: usize,
         embed_metadata: bool,
+        total_tokens: &mut usize,
+        doc_count: &mut usize,
     ) -> Result<(), Box<dyn std::error::Error>> {
         println!("Processing: {}", path_str);
 
@@ -128,10 +130,10 @@ pub async fn scan_files(
         let deduped_tokens = crate::tokenize_code::deduplicate_tokens(tokens);
         
         // Update token counts for avgdl
-        total_tokens += deduped_tokens.len();
-        doc_count += 1;
-        store.bm25_avgdl = total_tokens as f32 / doc_count as f32;
-        store.doc_count = doc_count;
+        *total_tokens += deduped_tokens.len();
+        *doc_count += 1;
+        store.bm25_avgdl = *total_tokens as f32 / *doc_count as f32;
+        store.doc_count = *doc_count;
 
         // Store the BM25 embedding
         store.bm25_files.push(Bm25EmbeddedFile {
@@ -207,6 +209,8 @@ pub async fn scan_files(
             chunk_size,
             overlap_size,
             embed_metadata,
+            &mut total_tokens,
+            &mut doc_count,
         )
         .await?;
     }
