@@ -44,13 +44,13 @@ enum Commands {
 
     /// Expand a prompt using a system prompt
     Expand {
-        /// The prompt to expand
-        #[arg(required = true, trailing_var_arg = true)]
-        prompt: Vec<String>,
-
         /// System prompt for expanding the question
         #[arg(required = true)]
         system_prompt: String,
+
+        /// The prompt to expand
+        #[arg(required = true, trailing_var_arg = true)]
+        prompt: Vec<String>,
     },
 }
 
