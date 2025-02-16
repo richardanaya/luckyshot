@@ -1,18 +1,13 @@
 # Luckyshot
 
-A powerful CLI tool that enhances AI coding assistants by intelligently selecting relevant context from your codebase using RAG (Retrieval Augmented Generation).
-
-## The Problem
-
-When using AI coding assistants like GitHub Copilot, Aider, or Continue.dev, one of the biggest challenges is selecting which files to include as context. Including too many files overwhelms the AI with irrelevant information, while missing crucial files leads to incomplete understanding and poor suggestions.
-
-Luckyshot solves this by using AI embeddings to automatically find the most relevant files in your codebase for any given query or task. Instead of manually selecting files or using simple text search, Luckyshot uses semantic search to understand the meaning and relationships between your code files.
+A powerful CLI tool that enhances code understanding by using RAG (Retrieval Augmented Generation) to find and analyze relevant files in your codebase.
 
 ## Features
 
-- File scanning and embedding generation
-- Semantic search across codebase
-- Intelligent answers using context-aware prompts
+- File scanning with customizable chunk sizes and overlap
+- Semantic search using OpenAI embeddings
+- Support for piped input and file suggestions
+- Intelligent context expansion
 
 ## Installation
 
@@ -24,41 +19,58 @@ cargo install luckyshot
 
 ### Scanning Files
 
-To generate embeddings for your codebase, use the `scan` command with a glob pattern:
+Generate embeddings for your codebase using the `scan` command:
 
 ```bash
-luckyshot scan "*.rs"  # Scan all Rust files
-luckyshot scan "src/**/*{.rs,.md}"  # Scan all files in src directory recursively
+# Basic scan of all Rust files
+luckyshot scan "*.rs"
+
+# Scan with chunking enabled
+luckyshot scan --chunk-size 1000 --overlap-size 100 "src/**/*.rs"
+
+# Include file metadata in embeddings
+luckyshot scan --embed-metadata "*.{rs,md}"
+```
+
+The scan command:
+1. Finds files matching your pattern (respecting .gitignore)
+2. Generates embeddings using OpenAI's API
+3. Saves results to `.luckyshot.file.vectors.v1`
+
+### Finding Relevant Files
+
+To find files related to a topic or question:
+
+```bash
+# Using command line arguments
+luckyshot suggest-files "how does the scanning work?"
+
+# Using piped input
+echo "how does error handling work?" | luckyshot suggest-files
 ```
 
 This will:
-1. Find all files matching the pattern (respecting your .gitignore)
-2. Generate embeddings using OpenAI's API
-3. Save the embeddings to `.luckyshot.file.vectors.v1`
+1. Convert your query into an embedding
+2. Use BM25-style ranking to find similar files
+3. Display relevant files with similarity scores
 
-### Asking Questions
+### Expanding Context
 
-To ask questions about your codebase:
+To expand a query with additional context:
 
 ```bash
-luckyshot ask "how does the file scanning work?"
+luckyshot expand "describe the implementation" --system-prompt "You are a helpful assistant"
 ```
-
-This will:
-1. Convert your question into an embedding
-2. Find the most semantically similar files in your codebase
-3. Use those files as context to provide a relevant answer
 
 ## Environment Setup
 
-You'll need an OpenAI API key to use Luckyshot. Set it in your environment:
+You'll need an OpenAI API key. Either:
 
 ```bash
 export OPENAI_API_KEY="your-api-key"
 ```
 
-Or create a `.env` file in your project root:
-
+Or create a `.env` file:
 ```
 OPENAI_API_KEY=your-api-key
 ```
