@@ -106,6 +106,16 @@ pub async fn find_related_files(query_embedding: Vec<f32>, filter_similarity: f3
         .take(if count > 0 { count } else { matches.len() })
         .collect();
 
+    // Return early if no matches
+    if filtered_matches.is_empty() {
+        return Vec::new();
+    }
+
+    // Print header for verbose output
+    if verbose {
+        println!("Score,File,Type,Offset,Size");
+    }
+
     // Print matches according to verbosity and content settings
     for m in &filtered_matches {
         let embedding = file_embeddings.iter()
@@ -137,9 +147,10 @@ pub async fn find_related_files(query_embedding: Vec<f32>, filter_similarity: f3
         }
     }
 
-    // Return filenames only
-    matches.iter()
-        .map(|m| m.filename.clone())
+    // Return filenames only from filtered matches
+    filtered_matches.iter()
+        .map(|m| &m.filename)
+        .cloned()
         .collect()
 }
 
