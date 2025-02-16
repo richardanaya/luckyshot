@@ -7,6 +7,7 @@ mod similarity;
 mod files;
 mod metadata;
 mod bm25_embedder;
+mod bm25_ranker;
 mod openai;
 mod scan;
 mod search;
