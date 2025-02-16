@@ -26,7 +26,7 @@ pub fn tokenize_code(input: &str) -> Vec<String> {
                 chars.next();
             },
             // Handle special characters and operators
-            '<' | '>' | '(' | ')' | '{' | '}' | '[' | ']' | ',' | ';' | ':' | '"' | '\'' => {
+            '<' | '>' | '(' | ')' | '{' | '}' | '[' | ']' | ',' | ';' | ':' | '"' | '\'' | '=' | '?' => {
                 if !current_token.is_empty() {
                     tokens.push(current_token.clone());
                     current_token.clear();
@@ -47,10 +47,9 @@ pub fn tokenize_code(input: &str) -> Vec<String> {
             },
             '!' => {
                 if !current_token.is_empty() {
-                    tokens.push(current_token);
-                    current_token = String::new();
+                    tokens.push(current_token.clone());
+                    current_token.clear();
                 }
-                current_token.push(c);
                 chars.next();
             },
             '#' => {
