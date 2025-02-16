@@ -165,10 +165,9 @@ pub async fn scan_files(
                 use colored::*;
                 use figlet_rs::FIGfont;
                 
-                if let Ok(standard_font) = FIGfont::standard() {
-                    if let Ok(figure) = standard_font.convert("Yee-haw!") {
-                        println!("\n{}", figure.to_string().bright_yellow());
-                    }
+                if let Some(standard_font) = FIGfont::standard() {
+                    let figure = standard_font.convert("Yee-haw!");
+                    println!("\n{}", figure.to_string().bright_yellow());
                 }
             }
         }
