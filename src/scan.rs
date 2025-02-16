@@ -123,7 +123,7 @@ pub async fn scan_files(
         };
 
         // Generate BM25 vector for the entire file
-        let bm25_vec = crate::bm25_embedder::create_bm25_vector(&content_to_embed, 200.0);
+        let bm25_vec = crate::bm25_embedder::create_bm25_vector(&content_to_embed, store.bm25_avgdl);
 
         // Tokenize and deduplicate tokens for BM25
         let tokens = crate::tokenize_code::tokenize_code(&content_to_embed, path_str);
