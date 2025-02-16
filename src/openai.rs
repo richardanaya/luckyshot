@@ -175,14 +175,14 @@ pub async fn get_chat_completion(prompt: &str, api_key: &str) -> Result<String, 
     Ok(chat_response.choices[0].message.content.clone())
 }
 
-pub async fn get_openai_chat_completion(prompt: &str, api_key: &str) -> Result<String, Box<dyn Error>> {
+pub async fn get_openai_chat_completion(prompt: &str, system_prompt: &str, api_key: &str) -> Result<String, Box<dyn Error>> {
     let client = Client::new();
     let request = OpenAIChatRequest {
         model: "gpt-4o-mini".to_string(),
         messages: vec![
             ChatMessage {
                 role: "system".to_string(),
-                content: "You are a helpful assistant.".to_string(),
+                content: system_prompt.to_string(),
             },
             ChatMessage {
                 role: "user".to_string(),
