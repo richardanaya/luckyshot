@@ -23,7 +23,10 @@ Generate embeddings for your codebase using the `scan` command:
 
 ```bash
 # Basic scan of all Rust files
-luckyshot scan "*.rs"
+luckyshot scan "**/*.rs"
+
+# Basic scan of all Rust and Markdown files
+luckyshot scan "**/*{.rs,.md}"
 
 # Scan with chunking enabled
 luckyshot scan --chunk-size 1000 --overlap-size 100 "src/**/*.rs"
