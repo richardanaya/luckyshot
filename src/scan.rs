@@ -1,3 +1,5 @@
+use crate::tokenizer::get_tokenizer;
+use bm25::Tokenizer;
 use serde::{Deserialize, Serialize};
 use std::fs;
 
@@ -22,7 +24,7 @@ pub struct Bm25EmbeddedFile {
     pub tokens: Vec<String>,
     pub token_count: usize,
     pub last_modified: u64,
-    pub has_metadata: bool,  // Whether metadata was included in the embedding
+    pub has_metadata: bool, // Whether metadata was included in the embedding
 }
 
 #[derive(Serialize, Deserialize)]
@@ -123,14 +125,14 @@ pub async fn scan_files(
         };
 
         // Generate BM25 vector for the entire file
-        let bm25_vec = crate::bm25_embedder::create_bm25_vector(&content_to_embed, store.bm25_avgdl);
+        let bm25_vec =
+            crate::bm25_embedder::create_bm25_vector(&content_to_embed, store.bm25_avgdl);
 
         // Tokenize and deduplicate tokens for BM25
-        let tokens = crate::tokenize_code::tokenize_code(&content_to_embed, path_str);
-        let deduped_tokens = crate::tokenize_code::deduplicate_tokens(tokens);
-        
+        let tokens = get_tokenizer().tokenize(&content_to_embed);
+
         // Update token counts for avgdl
-        *total_tokens += deduped_tokens.len();
+        *total_tokens += tokens.len();
         *doc_count += 1;
         store.bm25_avgdl = *total_tokens as f32 / *doc_count as f32;
         store.doc_count = *doc_count;
@@ -140,8 +142,8 @@ pub async fn scan_files(
             filename: path_str.to_string(),
             bm25_indices: bm25_vec.indices,
             bm25_values: bm25_vec.values,
-            tokens: deduped_tokens.clone(),
-            token_count: deduped_tokens.len(),
+            tokens: tokens.clone(),
+            token_count: tokens.len(),
             last_modified,
             has_metadata: embed_metadata,
         });
@@ -170,10 +172,7 @@ pub async fn scan_files(
                     });
 
                     if chunk_size > 0 {
-                        println!(
-                            "Got embedding for {} (chunk offset: {})",
-                            path_str, offset
-                        );
+                        println!("Got embedding for {} (chunk offset: {})", path_str, offset);
                     } else {
                         println!("Got embedding for {}", path_str);
                     }
