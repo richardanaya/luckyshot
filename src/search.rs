@@ -53,15 +53,16 @@ pub async fn find_related_files(query_embedding: Vec<f32>, filter_similarity: f3
     matches.sort_by(|a, b| b.similarity.partial_cmp(&a.similarity).unwrap());
 
     // First filter by similarity threshold
-    let similarity_filtered: Vec<_> = matches.iter()
+    let similarity_filtered: Vec<&FileMatch> = matches.iter()
         .filter(|m| m.similarity >= filter_similarity)
         .collect();
 
     // For non-verbose, non-file-contents mode, deduplicate filenames before count limiting
-    let deduplicated: Vec<_> = if !verbose && !file_contents {
+    let deduplicated: Vec<&FileMatch> = if !verbose && !file_contents {
         let mut seen = std::collections::HashSet::new();
         similarity_filtered.iter()
             .filter(|m| seen.insert(&m.filename))
+            .copied()
             .collect()
     } else {
         similarity_filtered
