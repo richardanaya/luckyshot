@@ -17,7 +17,7 @@ pub fn create_embedding_from_indices_and_values(
     Embedding(token_embeddings)
 }
 
-pub fn rank_documents(store: &FileVectorStore, query: &str) -> Vec<ScoredDocument<u32>> {
+pub fn rank_documents(store: &FileVectorStore, query: &str, avgdl: f32) -> Vec<ScoredDocument<u32>> {
     println!("\n=== BM25 Ranking Debug ===");
     println!(
         "Ranking {} documents against query: {}",
@@ -41,7 +41,7 @@ pub fn rank_documents(store: &FileVectorStore, query: &str) -> Vec<ScoredDocumen
     }
 
     // Create query embedding
-    let query_embedding = create_bm25_vector(query, 1.0);
+    let query_embedding = create_bm25_vector(query, avgdl);
     println!(
         "Created query embedding with {} tokens",
         query_embedding.indices.len()

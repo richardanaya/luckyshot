@@ -34,7 +34,7 @@ pub async fn find_related_files(
     };
 
     // Perform BM25 ranking
-    /* let bm25_results = crate::bm25_ranker::rank_documents(&file_embeddings, query_text);
+    /* let bm25_results = crate::bm25_ranker::rank_documents(&store, query_text, store.bm25_avgdl);
 
     println!("\nBM25 ranks:");
     for scored_doc in bm25_results {
