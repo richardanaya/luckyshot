@@ -11,7 +11,7 @@ pub struct FileEmbedding {
     pub is_full_file: bool,   // Whether this is a full file embedding or a chunk
 }
 
-pub async fn scan_files(pattern: &str, api_key: &str, chunk_size: usize, overlap_size: usize) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn scan_files(pattern: &str, api_key: &str, chunk_size: usize, overlap_size: usize, embed_metadata: bool) -> Result<(), Box<dyn std::error::Error>> {
     if chunk_size > 0 && overlap_size >= chunk_size {
         return Err("overlap_size must be less than chunk_size".into());
     }
@@ -57,7 +57,20 @@ pub async fn scan_files(pattern: &str, api_key: &str, chunk_size: usize, overlap
                 let chunks = create_chunks(&contents, chunk_size, overlap_size);
             
                 for (offset, chunk_content) in chunks {
-                    match crate::openai::get_embedding(&chunk_content, api_key).await {
+                    let content_to_embed = if embed_metadata {
+                        // Include file metadata in the content
+                        let metadata = fs::metadata(path)?;
+                        let modified = metadata.modified()?.duration_since(std::time::UNIX_EPOCH)?.as_secs();
+                        let size = metadata.len();
+                        format!(
+                            "File: {}\nLast Modified: {}\nSize: {}\nContent:\n{}", 
+                            path_str, modified, size, chunk_content
+                        )
+                    } else {
+                        chunk_content.clone()
+                    };
+                    
+                    match crate::openai::get_embedding(&content_to_embed, api_key).await {
                         Ok(embedding) => {
                             let metadata = fs::metadata(path)?;
                             let last_modified = metadata.modified()?.duration_since(std::time::UNIX_EPOCH)?.as_secs();

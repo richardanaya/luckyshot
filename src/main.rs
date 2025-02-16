@@ -28,6 +28,10 @@ enum Commands {
         /// Size of overlap between chunks (0 for no overlap)
         #[arg(long, default_value = "0")]
         overlap_size: usize,
+
+        /// Include file metadata in embeddings
+        #[arg(long, default_value = "false")]
+        embed_metadata: bool,
     },
 
     /// Ask a question about the codebase
@@ -48,12 +52,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Scan { pattern, chunk_size, overlap_size } => {
+        Commands::Scan { pattern, chunk_size, overlap_size, embed_metadata } => {
             if chunk_size > 0 && overlap_size >= chunk_size {
                 eprintln!("Error: overlap_size must be less than chunk_size");
                 std::process::exit(1);
             }
-            scan::scan_files(&pattern, &api_key, chunk_size, overlap_size).await?;
+            scan::scan_files(&pattern, &api_key, chunk_size, overlap_size, embed_metadata).await?;
         }
         Commands::Ask { prompt } => {
             let prompt = prompt.join(" ");
