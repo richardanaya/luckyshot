@@ -39,10 +39,10 @@ pub async fn find_related_files(
     println!("\nBM25 ranks:");
     for scored_doc in bm25_results {
         let doc_index = scored_doc.id as usize;
-        if doc_index < file_embeddings.len() {
+        if doc_index < store.bm25_files.len() {
             println!(
                 "{:.3}: {}",
-                scored_doc.score, file_embeddings[doc_index].filename
+                scored_doc.score, store.bm25_files[doc_index].filename
             );
         }
     }
