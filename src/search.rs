@@ -34,7 +34,7 @@ pub async fn find_related_files(
     };
 
     // Perform BM25 ranking
-    /* let bm25_results = crate::bm25_ranker::rank_documents(&store, query_text, store.bm25_avgdl);
+    let bm25_results = crate::bm25_ranker::rank_documents(&store, query_text, store.bm25_avgdl);
 
     println!("\nBM25 ranks:");
     for scored_doc in bm25_results {
@@ -46,7 +46,7 @@ pub async fn find_related_files(
             );
         }
     }
-    println!("\nBM25 done");*/
+    println!("\nBM25 done");
 
     // Get query embedding and calculate similarity for each file
     let query_embedding = match crate::openai::get_embedding(query_text, api_key).await {
@@ -57,7 +57,8 @@ pub async fn find_related_files(
         }
     };
 
-    let mut matches: Vec<FileMatch> = store.rag_vectors
+    let mut matches: Vec<FileMatch> = store
+        .rag_vectors
         .iter()
         .map(|embedding| {
             let similarity =
@@ -123,7 +124,8 @@ pub async fn find_related_files(
     if verbose {
         println!("Score,File,Type,Offset,Size");
         for m in &final_matches {
-            let embedding = store.rag_vectors
+            let embedding = store
+                .rag_vectors
                 .iter()
                 .find(|e| e.filename == m.filename)
                 .unwrap();
@@ -142,7 +144,8 @@ pub async fn find_related_files(
         }
     } else if file_contents {
         for m in &final_matches {
-            let embedding = store.rag_vectors
+            let embedding = store
+                .rag_vectors
                 .iter()
                 .find(|e| e.filename == m.filename)
                 .unwrap();
