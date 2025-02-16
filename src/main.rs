@@ -37,8 +37,8 @@ enum Commands {
     /// Ask a question about the codebase
     #[command(trailing_var_arg = true)]
     Ask {
-        /// The question to ask
-        #[arg(required = true)]
+        /// The question to ask (optional if using stdin)
+        #[arg(trailing_var_arg = true)]
         prompt: Vec<String>,
     },
 
@@ -71,10 +71,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             scan::scan_files(&pattern, &api_key, chunk_size, overlap_size, embed_metadata).await?;
         }
         Commands::Ask { prompt } => {
-            let prompt = prompt.join(" ");
-            println!("Answering question: {}", prompt);
+            let prompt_text = if prompt.is_empty() {
+                let mut buffer = String::new();
+                std::io::stdin().read_to_string(&mut buffer)?;
+                buffer.trim().to_string()
+            } else {
+                prompt.join(" ")
+            };
 
-            match openai::get_embedding(&prompt, &api_key).await {
+            if prompt_text.is_empty() {
+                eprintln!("Error: No input provided via arguments or stdin");
+                std::process::exit(1);
+            }
+
+            println!("Answering question: {}", prompt_text);
+            match openai::get_embedding(&prompt_text, &api_key).await {
                 Ok(embedding) => {
                     let _related_files = openai::find_related_files(embedding).await;
                 }
