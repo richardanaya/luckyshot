@@ -41,7 +41,7 @@ enum Commands {
     /// Suggest relevant files based on a query
     SuggestFiles {
         /// The query to find relevant files (optional if using stdin)
-        #[arg(required = false)]
+        #[arg(long, required = false)]
         prompt: Option<String>,
 
         /// Only return results with similarity >= filter-similarity (0.0 to 1.0)
