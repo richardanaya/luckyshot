@@ -10,7 +10,7 @@ pub struct FileVectorStore {
     pub overlap_size: usize,
     pub embed_metadata: bool,
     pub date: u64,
-    pub avgdl: f32,
+    pub bm25_avgdl: f32,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -56,7 +56,7 @@ pub async fn scan_files(
         date: std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)?
             .as_secs(),
-        avgdl: 0.0,
+        bm25_avgdl: 0.0,
     };
 
     // For calculating average document length
@@ -128,7 +128,7 @@ pub async fn scan_files(
         // Update token counts for avgdl
         total_tokens += deduped_tokens.len();
         doc_count += 1;
-        store.avgdl = total_tokens as f32 / doc_count as f32;
+        store.bm25_avgdl = total_tokens as f32 / doc_count as f32;
 
         // Store the BM25 embedding
         store.bm25_files.push(Bm25EmbeddedFile {
