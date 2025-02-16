@@ -9,6 +9,7 @@ pub struct FileEmbedding {
     pub chunk_offset: usize, // Starting position of chunk in file
     pub chunk_size: usize,   // Size of this chunk (might be smaller for last chunk)
     pub is_full_file: bool,  // Whether this is a full file embedding or a chunk
+    pub has_metadata: bool,  // Whether metadata was included in the embedding
 }
 
 pub async fn scan_files(
@@ -99,6 +100,7 @@ pub async fn scan_files(
                                 chunk_offset: offset,
                                 chunk_size: chunk_content.len(),
                                 is_full_file: chunk_size == 0,
+                                has_metadata: embed_metadata,
                             });
 
                             if chunk_size > 0 {
