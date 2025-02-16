@@ -11,7 +11,7 @@ mod openai;
 mod scan;
 mod search;
 mod similarity;
-mod tokenize_code;
+mod tokenizer;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
