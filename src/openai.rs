@@ -5,25 +5,26 @@ use std::vec::Vec;
 use std::fs;
 
 #[derive(Debug, Serialize)]
-struct ChatRequest {
+struct OpenAIChatRequest {
     model: String,
     messages: Vec<ChatMessage>,
+    temperature: f32,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Deserialize)]
+struct OpenAIChatResponse {
+    choices: Vec<OpenAIChatChoice>,
+}
+
+#[derive(Debug, Deserialize)]
+struct OpenAIChatChoice {
+    message: ChatMessage,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 struct ChatMessage {
     role: String,
     content: String,
-}
-
-#[derive(Debug, Deserialize)]
-struct ChatResponse {
-    choices: Vec<ChatChoice>,
-}
-
-#[derive(Debug, Deserialize)]
-struct ChatChoice {
-    message: ChatMessage,
 }
 
 #[derive(Debug)]
@@ -171,6 +172,35 @@ pub async fn get_chat_completion(prompt: &str, api_key: &str) -> Result<String, 
         .await?;
 
     let chat_response: ChatResponse = response.json().await?;
+    Ok(chat_response.choices[0].message.content.clone())
+}
+
+pub async fn get_openai_chat_completion(prompt: &str, api_key: &str) -> Result<String, Box<dyn Error>> {
+    let client = Client::new();
+    let request = OpenAIChatRequest {
+        model: "gpt-4".to_string(),
+        messages: vec![
+            ChatMessage {
+                role: "system".to_string(),
+                content: "You are a helpful assistant.".to_string(),
+            },
+            ChatMessage {
+                role: "user".to_string(),
+                content: prompt.to_string(),
+            },
+        ],
+        temperature: 0.7,
+    };
+
+    let response = client
+        .post("https://api.openai.com/v1/chat/completions")
+        .header("Authorization", format!("Bearer {}", api_key))
+        .header("Content-Type", "application/json")
+        .json(&request)
+        .send()
+        .await?;
+
+    let chat_response: OpenAIChatResponse = response.json().await?;
     Ok(chat_response.choices[0].message.content.clone())
 }
 
