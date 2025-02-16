@@ -4,6 +4,28 @@ use std::error::Error;
 use std::vec::Vec;
 use std::fs;
 
+#[derive(Debug, Serialize)]
+struct ChatRequest {
+    model: String,
+    messages: Vec<ChatMessage>,
+}
+
+#[derive(Debug, Serialize)]
+struct ChatMessage {
+    role: String,
+    content: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct ChatResponse {
+    choices: Vec<ChatChoice>,
+}
+
+#[derive(Debug, Deserialize)]
+struct ChatChoice {
+    message: ChatMessage,
+}
+
 #[derive(Debug)]
 pub struct FileMatch {
     pub filename: String,
@@ -127,6 +149,29 @@ struct EmbeddingData {
 struct Usage {
     prompt_tokens: i32,
     total_tokens: i32,
+}
+
+pub async fn get_chat_completion(prompt: &str, api_key: &str) -> Result<String, Box<dyn Error>> {
+    let client = Client::new();
+    let request = ChatRequest {
+        model: "claude-3-opus-20240229".to_string(),
+        messages: vec![ChatMessage {
+            role: "user".to_string(),
+            content: prompt.to_string(),
+        }],
+    };
+
+    let response = client
+        .post("https://api.anthropic.com/v1/messages")
+        .header("x-api-key", api_key)
+        .header("anthropic-version", "2023-06-01")
+        .header("Content-Type", "application/json")
+        .json(&request)
+        .send()
+        .await?;
+
+    let chat_response: ChatResponse = response.json().await?;
+    Ok(chat_response.choices[0].message.content.clone())
 }
 
 pub async fn get_embedding(text: &str, api_key: &str) -> Result<Vec<f32>, Box<dyn Error>> {
