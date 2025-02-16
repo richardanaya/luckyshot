@@ -57,7 +57,7 @@ luckyshot suggest-files "how does the scanning work?"
 # Using piped input
 echo "how does error handling work?" | luckyshot suggest-files
 
-# Filter results by similarity score (0.0 to 1.0)
+# Filter results by similarity score (matches >= specified value, range 0.0 to 1.0)
 luckyshot suggest-files --filter-similarity 0.5 "error handling"
 
 # Show detailed information including similarity scores
