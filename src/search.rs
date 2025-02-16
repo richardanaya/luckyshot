@@ -13,7 +13,7 @@ pub async fn find_related_files(query_embedding: Vec<f32>, filter_similarity: f3
         Ok(content) => content,
         Err(e) => {
             eprintln!("Error reading vectors file: {}", e);
-            return Vec::new();
+            return Ok(Vec::new());
         }
     };
 
@@ -22,7 +22,7 @@ pub async fn find_related_files(query_embedding: Vec<f32>, filter_similarity: f3
         Ok(embeddings) => embeddings,
         Err(e) => {
             eprintln!("Error parsing vectors file: {}", e);
-            return Vec::new();
+            return Ok(Vec::new());
         }
     };
 
