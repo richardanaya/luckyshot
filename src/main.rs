@@ -6,6 +6,7 @@ use std::io::Read;
 mod similarity;
 mod files;
 mod metadata;
+mod bm25_embedder;
 mod openai;
 mod scan;
 mod search;
