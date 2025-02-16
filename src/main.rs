@@ -11,6 +11,7 @@ mod bm25_ranker;
 mod openai;
 mod scan;
 mod search;
+mod tokenize_code;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
