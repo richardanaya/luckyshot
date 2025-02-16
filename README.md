@@ -80,7 +80,7 @@ echo "what openai url am I using" | \
 ```
 
 This will:
-1. Expand your prompt into something with more detail to match by
+1. Expand your prompt into something with more features to match similarity by
 2. Convert your query into an embedding
 3. Use BM25-style ranking to find similar files
 4. Display relevant files with similarity scores
