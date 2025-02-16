@@ -158,7 +158,7 @@ pub async fn scan_files(
             &mut store.rag_vectors,
             api_key,
             chunk_size,
-            overlap_size,
+            chunk_overlap,
             embed_metadata,
         )
         .await?;
