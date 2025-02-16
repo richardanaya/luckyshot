@@ -3,14 +3,14 @@ use dotenvy::dotenv;
 use std::env;
 use std::io::Read;
 
-mod similarity;
-mod files;
-mod metadata;
 mod bm25_embedder;
 mod bm25_ranker;
+mod files;
+mod metadata;
 mod openai;
 mod scan;
 mod search;
+mod similarity;
 mod tokenize_code;
 
 #[derive(Parser)]
@@ -25,7 +25,7 @@ enum Commands {
     /// Scan files matching a glob pattern
     Scan {
         /// The glob pattern to match files
-        #[arg(required = true)]
+        #[arg(short, long, required = true)]
         pattern: String,
 
         /// Size of chunks to split files into (0 for no chunking)
@@ -44,11 +44,11 @@ enum Commands {
     /// Suggest relevant files based on a query
     SuggestFiles {
         /// The query to find relevant files (optional if using stdin)
-        #[arg(long, required = false)]
+        #[arg(short, long, required = false)]
         prompt: Option<String>,
 
         /// Only return results with similarity >= filter-similarity (0.0 to 1.0)
-        #[arg(long, default_value = "0.0")]
+        #[arg(short, long, default_value = "0.0")]
         filter_similarity: f32,
 
         /// Show detailed information including similarity scores and chunk details
@@ -60,14 +60,14 @@ enum Commands {
         file_contents: bool,
 
         /// Limit the number of results (0 for unlimited)
-        #[arg(long, default_value = "0")]
+        #[arg(short, long, default_value = "0")]
         count: usize,
     },
 
     /// Expand a prompt using a system prompt
     Expand {
         /// System prompt for expanding the question
-        #[arg(required = true)]
+        #[arg(short, long, required = true)]
         system_prompt: String,
 
         /// The prompt to expand (optional if using stdin)
