@@ -55,7 +55,7 @@ struct EmbeddingRequest {
     model: String,
 }
 
-pub async fn find_related_files(query_embedding: Vec<f32>, filter_similarity: f32, verbose: bool, file_contents: bool) -> Vec<String> {
+pub async fn find_related_files(query_embedding: Vec<f32>, filter_similarity: f32, verbose: bool, file_contents: bool, count: usize) -> Vec<String> {
     // Load the vectors file
     let vectors_content = match fs::read_to_string(".luckyshot.file.vectors.v1") {
         Ok(content) => content,
@@ -100,9 +100,10 @@ pub async fn find_related_files(query_embedding: Vec<f32>, filter_similarity: f3
     // Sort by normalized similarity (highest first)
     matches.sort_by(|a, b| b.similarity.partial_cmp(&a.similarity).unwrap());
 
-    // Filter matches by similarity threshold
+    // Filter matches by similarity threshold and limit count if specified
     let filtered_matches: Vec<_> = matches.iter()
         .filter(|m| m.similarity >= filter_similarity)
+        .take(if count > 0 { count } else { matches.len() })
         .collect();
 
     // Print matches according to verbosity and content settings
