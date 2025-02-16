@@ -98,13 +98,12 @@ pub async fn find_related_files(query_embedding: Vec<f32>, filter_similarity: f3
                     
                     // If metadata was included in the embedding, reconstruct it for display
                     let display_content = if embedding.has_metadata {
-                        let metadata = std::fs::metadata(&embedding.filename)?;
-                        let modified = metadata
-                            .modified()?
-                            .duration_since(std::time::UNIX_EPOCH)?
-                            .as_secs();
-                        let size = metadata.len();
-                        crate::metadata::prepend_metadata(&embedding.filename, modified, size, chunk_content)
+                        crate::metadata::prepend_metadata(
+                            &embedding.filename,
+                            embedding.last_modified,
+                            std::fs::metadata(&embedding.filename)?.len(),
+                            chunk_content
+                        )
                     } else {
                         chunk_content.to_string()
                     };
