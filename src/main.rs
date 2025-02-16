@@ -64,7 +64,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Scan { pattern, chunk_size, overlap_size, embed_metadata } => {
+        Commands::Scan {
+            pattern,
+            chunk_size,
+            overlap_size,
+            embed_metadata,
+        } => {
             if chunk_size > 0 && overlap_size >= chunk_size {
                 eprintln!("Error: overlap_size must be less than chunk_size");
                 std::process::exit(1);
@@ -85,7 +90,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 std::process::exit(1);
             }
 
-            println!("Answering question: {}", prompt_text);
             match openai::get_embedding(&prompt_text, &api_key).await {
                 Ok(embedding) => {
                     let _related_files = openai::find_related_files(embedding).await;
@@ -95,7 +99,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
         }
-        Commands::Expand { prompt, system_prompt } => {
+        Commands::Expand {
+            prompt,
+            system_prompt,
+        } => {
             let prompt_text = if prompt.is_empty() {
                 // Read from stdin if no prompt arguments provided
                 let mut buffer = String::new();
@@ -106,9 +113,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             };
 
             if !prompt_text.trim().is_empty() {
-                println!("Expanding prompt: {}", prompt_text);
-                match openai::get_openai_chat_completion(&prompt_text, &system_prompt, &api_key).await {
-                    Ok(expanded) => println!("Expanded prompt: {}", expanded),
+                match openai::get_openai_chat_completion(&prompt_text, &system_prompt, &api_key)
+                    .await
+                {
+                    Ok(expanded) => println!("{}", expanded),
                     Err(e) => eprintln!("Error expanding prompt: {}", e),
                 }
             } else {
