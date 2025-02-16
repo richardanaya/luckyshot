@@ -132,13 +132,7 @@ pub async fn find_related_files(query_embedding: Vec<f32>, filter_similarity: f3
                 embedding.chunk_size
             );
         }
-    } else {
-        for m in &final_matches {
-            println!("{}", m.filename);
-        }
-    }
-
-    if file_contents {
+    } else if file_contents {
         for m in &final_matches {
             let embedding = file_embeddings.iter()
                 .find(|e| e.filename == m.filename)
@@ -153,6 +147,12 @@ pub async fn find_related_files(query_embedding: Vec<f32>, filter_similarity: f3
                     println!("--- End content ---\n");
                 }
             }
+            println!("{}", m.filename);
+        }
+    } else {
+        // Just print filenames as the default case
+        for m in &final_matches {
+            println!("{}", m.filename);
         }
     }
 
