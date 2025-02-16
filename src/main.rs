@@ -41,6 +41,7 @@ enum Commands {
     /// Suggest relevant files based on a query
     SuggestFiles {
         /// The query to find relevant files (optional if using stdin)
+        #[arg(required = false)]
         prompt: Option<String>,
 
         /// Only return results with similarity >= filter-similarity (0.0 to 1.0)
@@ -67,6 +68,7 @@ enum Commands {
         system_prompt: String,
 
         /// The prompt to expand (optional if using stdin)
+        #[arg(required = false)]
         prompt: Option<String>,
     },
 }
@@ -90,9 +92,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 eprintln!("Error: chunk-overlap must be less than chunk-size");
                 std::process::exit(1);
             }
-            scan::scan_files(&pattern, &api_key, chunk_size, chunk_overlap, embed_metadata).await?;
+            scan::scan_files(
+                &pattern,
+                &api_key,
+                chunk_size,
+                chunk_overlap,
+                embed_metadata,
+            )
+            .await?;
         }
-        Commands::SuggestFiles { prompt, filter_similarity, verbose, file_contents, count } => {
+        Commands::SuggestFiles {
+            prompt,
+            filter_similarity,
+            verbose,
+            file_contents,
+            count,
+        } => {
             if !(0.0..=1.0).contains(&filter_similarity) {
                 eprintln!("Error: filter-similarity must be between 0.0 and 1.0");
                 std::process::exit(1);
@@ -118,7 +133,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             match openai::get_embedding(&prompt_text, &api_key).await {
                 Ok(embedding) => {
-                    if let Err(e) = search::find_related_files(embedding, filter_similarity, verbose, file_contents, count).await {
+                    if let Err(e) = search::find_related_files(
+                        embedding,
+                        filter_similarity,
+                        verbose,
+                        file_contents,
+                        count,
+                    )
+                    .await
+                    {
                         eprintln!("Error finding related files: {}", e);
                     }
                 }
