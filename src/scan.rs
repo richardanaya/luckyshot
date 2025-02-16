@@ -8,7 +8,7 @@ pub struct FileEmbedding {
     pub last_modified: u64,
 }
 
-pub async fn scan_files(pattern: &str, api_key: &str, chunk_size: usize, overlap_size: usize) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn scan_files(pattern: &str, api_key: &str, _chunk_size: usize, _overlap_size: usize) -> Result<(), Box<dyn std::error::Error>> {
     println!("Scanning for files matching pattern: {}", pattern);
     let mut file_embeddings: Vec<FileEmbedding> = Vec::new();
 
@@ -32,7 +32,7 @@ pub async fn scan_files(pattern: &str, api_key: &str, chunk_size: usize, overlap
                     }
                     Err(e) => {
                         eprintln!("Error getting embedding for {}: {}", path_str, e);
-                        Err(Box::new(e))
+                        Err(e)
                     },
                 }
             }
