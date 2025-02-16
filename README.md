@@ -52,25 +52,25 @@ To find files related to a topic or question:
 
 ```bash
 # Basic file suggestion
-luckyshot suggest-files "how does the scanning work?"
+luckyshot suggest-files --prompt "how does the scanning work?"
 
 # Using piped input
 echo "how does error handling work?" | luckyshot suggest-files
 
 # Filter results by similarity score (matches >= specified value, range 0.0 to 1.0)
-luckyshot suggest-files --filter-similarity 0.5 "error handling"
+luckyshot suggest-files --prompt "error handling" --filter-similarity 0.5
 
 # Show detailed information including similarity scores
-luckyshot suggest-files --verbose "file scanning"
+luckyshot suggest-files --prompt "file scanning" --verbose
 
 # Show file contents of matches
-luckyshot suggest-files --file-contents "metadata handling"
+luckyshot suggest-files --prompt "metadata handling" --file-contents
 
 # Limit number of results
-luckyshot suggest-files --count 5 "openai"
+luckyshot suggest-files --prompt "openai" --count 5
 
 # Combine options
-luckyshot suggest-files --verbose --file-contents --filter-similarity 0.7 --count 3 "embedding"
+luckyshot suggest-files --prompt "embedding" --verbose --file-contents --filter-similarity 0.7 --count 3
 
 # Chain commands Unix-style
 echo "what openai url am I using" | \
@@ -89,7 +89,7 @@ This will:
 To expand a query with additional context:
 
 ```bash
-luckyshot expand "describe the implementation" --system-prompt "You are a helpful assistant"
+luckyshot expand --prompt "describe the implementation" --system-prompt "You are a helpful assistant"
 ```
 
 ## Environment Setup

@@ -39,11 +39,9 @@ enum Commands {
     },
 
     /// Suggest relevant files based on a query
-    #[command(trailing_var_arg = true)]
     SuggestFiles {
         /// The query to find relevant files (optional if using stdin)
-        #[arg(trailing_var_arg = true)]
-        prompt: Vec<String>,
+        prompt: Option<String>,
 
         /// Only return results with similarity >= filter-similarity (0.0 to 1.0)
         #[arg(long, default_value = "0.0")]
@@ -69,8 +67,7 @@ enum Commands {
         system_prompt: String,
 
         /// The prompt to expand (optional if using stdin)
-        #[arg(trailing_var_arg = true)]
-        prompt: Vec<String>,
+        prompt: Option<String>,
     },
 }
 
@@ -100,17 +97,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 eprintln!("Error: filter-similarity must be between 0.0 and 1.0");
                 std::process::exit(1);
             }
-            let prompt_text = if prompt.is_empty() {
-                // Only try to read from stdin if it's not a terminal
-                if atty::isnt(atty::Stream::Stdin) {
-                    let mut buffer = String::new();
-                    std::io::stdin().read_to_string(&mut buffer)?;
-                    buffer.trim().to_string()
-                } else {
-                    String::new()
+            let prompt_text = match prompt {
+                None => {
+                    // Only try to read from stdin if it's not a terminal
+                    if atty::isnt(atty::Stream::Stdin) {
+                        let mut buffer = String::new();
+                        std::io::stdin().read_to_string(&mut buffer)?;
+                        buffer.trim().to_string()
+                    } else {
+                        String::new()
+                    }
                 }
-            } else {
-                prompt.join(" ").trim().to_string()
+                Some(p) => p,
             };
 
             if prompt_text.is_empty() {
@@ -133,17 +131,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             prompt,
             system_prompt,
         } => {
-            let prompt_text = if prompt.is_empty() {
-                // Only try to read from stdin if it's not a terminal
-                if atty::isnt(atty::Stream::Stdin) {
-                    let mut buffer = String::new();
-                    std::io::stdin().read_line(&mut buffer)?;
-                    buffer
-                } else {
-                    String::new()
+            let prompt_text = match prompt {
+                None => {
+                    // Only try to read from stdin if it's not a terminal
+                    if atty::isnt(atty::Stream::Stdin) {
+                        let mut buffer = String::new();
+                        std::io::stdin().read_line(&mut buffer)?;
+                        buffer
+                    } else {
+                        String::new()
+                    }
                 }
-            } else {
-                prompt.join(" ")
+                Some(p) => p,
             };
 
             if prompt_text.is_empty() {
