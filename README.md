@@ -27,6 +27,7 @@ This dual approach helps ensure you don't miss important context when using AI t
 - Semantic search using OpenAI embeddings and BM25 ranking
 - Support for piped input and file suggestions
 - Intelligent context expansion
+- Supports Unix-philosophy piped commands
 
 ## Installation
 
