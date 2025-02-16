@@ -1,5 +1,5 @@
-use crate::tokenize_code::tokenize_code;
-use bm25::{EmbedderBuilder, Tokenizer};
+use crate::tokenizer::get_tokenizer;
+use bm25::{DefaultTokenizer, EmbedderBuilder};
 
 #[derive(Debug)]
 pub struct Bm25Vector {
@@ -7,18 +7,12 @@ pub struct Bm25Vector {
     pub values: Vec<f32>,
 }
 
-#[derive(Default)]
-struct CodeTokenizer;
-
-// Tokenize on occurrences of "T"
-impl Tokenizer for CodeTokenizer {
-    fn tokenize(&self, input_text: &str) -> Vec<String> {
-        tokenize_code(input_text, "input.rs")
-    }
-}
-
 pub fn create_bm25_vector(text: &str, avgdl: f32) -> Bm25Vector {
-    let embedder = EmbedderBuilder::<u32, CodeTokenizer>::with_avgdl(avgdl).build();
+    let mut embedder_builder = EmbedderBuilder::<u32, DefaultTokenizer>::with_avgdl(avgdl);
+    embedder_builder = embedder_builder.tokenizer(get_tokenizer());
+    embedder_builder = embedder_builder.b(0.0);
+    let embedder = embedder_builder.build();
+
     let embedding = embedder.embed(text);
     Bm25Vector {
         indices: embedding.indices().cloned().collect(),

@@ -37,20 +37,6 @@ pub async fn find_related_files(
     // Perform BM25 ranking
     let bm25_results = crate::bm25_ranker::rank_documents(&store, query_text, store.bm25_avgdl);
 
-    if debug {
-        println!("\nBM25 ranks:");
-        for scored_doc in bm25_results {
-            let doc_index = scored_doc.id as usize;
-            if doc_index < store.bm25_files.len() {
-                println!(
-                    "{:.3}: {}",
-                    scored_doc.score, store.bm25_files[doc_index].filename
-                );
-            }
-        }
-        println!("\nBM25 done");
-    }
-
     // Get query embedding and calculate similarity for each file
     let query_embedding = match crate::openai::get_embedding(query_text, api_key).await {
         Ok(embedding) => embedding,
@@ -73,6 +59,31 @@ pub async fn find_related_files(
         })
         .collect();
 
+    // Sort matches by similarity
+    matches.sort_by(|a, b| b.similarity.partial_cmp(&a.similarity).unwrap());
+
+    if debug {
+        // print out the BM25 results
+        println!("\nBM25 ranks:");
+        for scored_doc in bm25_results {
+            let doc_index = scored_doc.id as usize;
+            if doc_index < store.bm25_files.len() {
+                println!(
+                    "{}: {}",
+                    scored_doc.score, store.bm25_files[doc_index].filename
+                );
+            }
+        }
+        println!("\n");
+
+        //print out the RAG vector distances and filename, in descending
+        println!("RAG distances:");
+        for m in &matches {
+            println!("{} {}", m.similarity, m.filename);
+        }
+        println!("\n");
+    }
+
     // Find min and max similarities for normalization
     let min_similarity = matches
         .iter()
@@ -89,9 +100,6 @@ pub async fn find_related_files(
             m.similarity = (m.similarity - min_similarity) / (max_similarity - min_similarity);
         }
     }
-
-    // Sort by normalized similarity (highest first)
-    matches.sort_by(|a, b| b.similarity.partial_cmp(&a.similarity).unwrap());
 
     // First filter by similarity threshold
     let similarity_filtered: Vec<&FileMatch> = matches

@@ -1,4 +1,4 @@
-use bm25::{DefaultTokenizer, Language, Tokenizer};
+use bm25::{DefaultTokenizer, Language};
 
 pub fn get_tokenizer() -> DefaultTokenizer {
     DefaultTokenizer::builder()

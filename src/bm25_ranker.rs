@@ -17,14 +17,11 @@ pub fn create_embedding_from_indices_and_values(
     Embedding(token_embeddings)
 }
 
-pub fn rank_documents(store: &FileVectorStore, query: &str, avgdl: f32) -> Vec<ScoredDocument<u32>> {
-    println!("\n=== BM25 Ranking Debug ===");
-    println!(
-        "Ranking {} documents against query: {}",
-        store.bm25_files.len(),
-        query
-    );
-
+pub fn rank_documents(
+    store: &FileVectorStore,
+    query: &str,
+    avgdl: f32,
+) -> Vec<ScoredDocument<u32>> {
     // Create scorer and add documents
     let mut scorer = Scorer::<u32>::new();
 
@@ -32,36 +29,15 @@ pub fn rank_documents(store: &FileVectorStore, query: &str, avgdl: f32) -> Vec<S
     for (i, e) in store.bm25_files.iter().enumerate() {
         let emb =
             create_embedding_from_indices_and_values(e.bm25_indices.clone(), e.bm25_values.clone());
-        println!(
-            "Adding document {} to scorer with {} tokens",
-            store.bm25_files[i].filename,
-            e.bm25_indices.len()
-        );
         scorer.upsert(&(i as u32), emb);
     }
 
     // Create query embedding
     let query_embedding = create_bm25_vector(query, avgdl);
-    println!(
-        "Created query embedding with {} tokens",
-        query_embedding.indices.len()
-    );
-
     let query_embedding =
         create_embedding_from_indices_and_values(query_embedding.indices, query_embedding.values);
 
     // Get matches sorted by score
     let matches = scorer.matches(&query_embedding);
-    println!("Found {} matches", matches.len());
-    println!(
-        "Top 3 scores: {:?}",
-        matches.iter().take(3).map(|m| m.id).collect::<Vec<_>>()
-    );
-    println!(
-        "Top 3 scores: {:?}",
-        matches.iter().take(3).map(|m| m.score).collect::<Vec<_>>()
-    );
-    println!("======================\n");
-
     matches
 }
