@@ -178,7 +178,7 @@ pub async fn get_chat_completion(prompt: &str, api_key: &str) -> Result<String, 
 pub async fn get_openai_chat_completion(prompt: &str, api_key: &str) -> Result<String, Box<dyn Error>> {
     let client = Client::new();
     let request = OpenAIChatRequest {
-        model: "gpt-4".to_string(),
+        model: "gpt-4o-mini".to_string(),
         messages: vec![
             ChatMessage {
                 role: "system".to_string(),
