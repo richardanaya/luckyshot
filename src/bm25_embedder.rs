@@ -1,4 +1,5 @@
 use bm25::{EmbedderBuilder, Tokenizer};
+use crate::tokenize_code::tokenize_code;
 
 #[derive(Debug)]
 pub struct Bm25Vector {
