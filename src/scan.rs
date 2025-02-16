@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::fs;
 use serde::{Serialize, Deserialize};
 
@@ -31,10 +30,16 @@ pub async fn scan_files(pattern: &str, api_key: &str, chunk_size: usize, overlap
                         });
                         Ok(())
                     }
-                    Err(e) => eprintln!("Error getting embedding for {}: {}", path_str, e),
+                    Err(e) => {
+                        eprintln!("Error getting embedding for {}: {}", path_str, e);
+                        Err(Box::new(e))
+                    },
                 }
             }
-            Err(e) => eprintln!("Error reading file {}: {}", path_str, e),
+            Err(e) => {
+                eprintln!("Error reading file {}: {}", path_str, e);
+                Err(Box::new(e))
+            }
         }
     }
 
