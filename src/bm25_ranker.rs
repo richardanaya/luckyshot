@@ -1,5 +1,5 @@
 use crate::bm25_embedder::create_bm25_vector;
-use crate::scan::{FileEmbedding, FileVectorStore};
+use crate::scan::FileVectorStore;
 use bm25::{Embedding, ScoredDocument, Scorer, TokenEmbedding};
 
 pub fn create_embedding_from_indices_and_values(

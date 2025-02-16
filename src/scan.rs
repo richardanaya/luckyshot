@@ -65,7 +65,7 @@ pub async fn scan_files(
     async fn process_file(
         path: &std::path::Path,
         path_str: &str,
-        file_embeddings: &mut Vec<FileEmbedding>,
+        store: &mut FileVectorStore,
         api_key: &str,
         chunk_size: usize,
         overlap_size: usize,
@@ -155,10 +155,10 @@ pub async fn scan_files(
         process_file(
             &path,
             &path_str,
-            &mut store.rag_vectors,
+            &mut store,
             api_key,
             chunk_size,
-            chunk_overlap,
+            overlap_size,
             embed_metadata,
         )
         .await?;

@@ -1,4 +1,4 @@
-use crate::scan::{FileEmbedding, FileVectorStore};
+use crate::scan::FileVectorStore;
 use std::fs;
 
 #[derive(Debug)]
