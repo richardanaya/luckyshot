@@ -4,6 +4,11 @@ use std::fs;
 #[derive(Serialize, Deserialize)]
 pub struct FileVectorStore {
     pub rag_vectors: Vec<FileEmbedding>,
+    pub scan_pattern: String,
+    pub scan_chunk_size: usize,
+    pub scan_overlap_size: usize,
+    pub scan_embed_metadata: bool,
+    pub scan_date: u64,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -32,6 +37,13 @@ pub async fn scan_files(
     println!("Scanning for files matching pattern: {}", pattern);
     let mut store = FileVectorStore {
         rag_vectors: Vec::new(),
+        scan_pattern: pattern.to_string(),
+        scan_chunk_size: chunk_size,
+        scan_overlap_size: overlap_size,
+        scan_embed_metadata: embed_metadata,
+        scan_date: std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)?
+            .as_secs(),
     };
 
     fn create_chunks(
