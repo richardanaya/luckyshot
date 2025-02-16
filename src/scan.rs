@@ -1,10 +1,18 @@
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
+use serde::{Serialize, Deserialize};
+
+#[derive(Serialize, Deserialize)]
+pub struct FileEmbedding {
+    pub filename: String,
+    pub vector: Vec<f32>,
+    pub last_modified: u64,
+}
 
 pub async fn scan_files(pattern: &str, api_key: &str, chunk_size: usize, overlap_size: usize) -> Result<(), Box<dyn std::error::Error>> {
     println!("Scanning for files matching pattern: {}", pattern);
-    let mut file_embeddings: HashMap<String, Vec<f32>> = HashMap::new();
+    let mut file_embeddings: Vec<FileEmbedding> = Vec::new();
 
     async fn process_file(path: &std::path::Path, path_str: &str, file_embeddings: &mut HashMap<String, Vec<f32>>, api_key: &str) {
         println!("Processing: {}", path_str);
@@ -14,7 +22,14 @@ pub async fn scan_files(pattern: &str, api_key: &str, chunk_size: usize, overlap
                 match crate::openai::get_embedding(&contents, api_key).await {
                     Ok(embedding) => {
                         println!("Got embedding for {}", path_str);
-                        file_embeddings.insert(path_str.to_string(), embedding);
+                        let metadata = fs::metadata(path)?;
+                        let last_modified = metadata.modified()?.duration_since(std::time::UNIX_EPOCH)?.as_secs();
+                        
+                        file_embeddings.push(FileEmbedding {
+                            filename: path_str.to_string(),
+                            vector: embedding,
+                            last_modified,
+                        });
                     }
                     Err(e) => eprintln!("Error getting embedding for {}: {}", path_str, e),
                 }

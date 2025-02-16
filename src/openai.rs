@@ -28,8 +28,8 @@ pub async fn find_related_files(query_embedding: Vec<f32>) -> Vec<String> {
     };
 
     // Parse the JSON
-    let file_embeddings: HashMap<String, Vec<f32>> = match serde_json::from_str(&vectors_content) {
-        Ok(map) => map,
+    let file_embeddings: Vec<crate::scan::FileEmbedding> = match serde_json::from_str(&vectors_content) {
+        Ok(embeddings) => embeddings,
         Err(e) => {
             eprintln!("Error parsing vectors file: {}", e);
             return Vec::new();
@@ -39,8 +39,8 @@ pub async fn find_related_files(query_embedding: Vec<f32>) -> Vec<String> {
     // Calculate similarity for each file
     let mut matches: Vec<FileMatch> = file_embeddings
         .iter()
-        .map(|(filename, embedding)| {
-            let similarity = bm25_similarity(&query_embedding, embedding);
+        .map(|embedding| {
+            let similarity = bm25_similarity(&query_embedding, &embedding.vector);
             FileMatch {
                 filename: filename.clone(),
                 similarity,
