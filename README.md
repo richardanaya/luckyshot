@@ -23,7 +23,10 @@ Generate embeddings for your codebase using the `scan` command:
 
 ```bash
 # Basic scan of all Rust files
-luckyshot scan "*.rs"
+luckyshot scan "**/*.rs"
+
+# Basic scan of all Rust and Markdown files
+luckyshot scan "**/*{.rs,.md}"
 
 # Scan with chunking enabled
 luckyshot scan --chunk-size 1000 --overlap-size 100 "src/**/*.rs"
@@ -54,7 +57,8 @@ echo "how does error handling work?" | luckyshot suggest-files
 # 2. Expand it with Rust expertise context
 # 3. Find relevant files
 echo "what openai url am I using" | \
-  luckyshot expand "you are a rust expert who describes their question and the files you are looking for" | \
+  luckyshot expand "you are a rust expert who describes their \
+     question and the files you are looking for" | \
   luckyshot suggest-files
 ```
 
