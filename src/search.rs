@@ -30,7 +30,7 @@ pub async fn find_related_files(query_embedding: Vec<f32>, filter_similarity: f3
     let mut matches: Vec<FileMatch> = file_embeddings
         .iter()
         .map(|embedding| {
-            let similarity = crate::bm25::bm25_similarity(&query_embedding, &embedding.vector);
+            let similarity = crate::similarity::dot_product_similarity(&query_embedding, &embedding.vector);
             FileMatch {
                 filename: embedding.filename.clone(),
                 similarity,

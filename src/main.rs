@@ -3,7 +3,7 @@ use dotenvy::dotenv;
 use std::env;
 use std::io::Read;
 
-mod bm25;
+mod similarity;
 mod files;
 mod metadata;
 mod openai;
