@@ -10,8 +10,6 @@ A powerful CLI tool that enhances code understanding and automation using RAG (R
 - Semantic search using OpenAI embeddings and BM25 ranking
 - Support for piped input and file suggestions
 - Intelligent context expansion
-- File watching and automatic RAG database updates
-- One-shot code generation with targeted file selection
 
 ## Installation
 
@@ -21,37 +19,25 @@ cargo install luckyshot
 
 ## Usage
 
-### Watching Files
-
-Start luckyshot in watch mode to automatically update the RAG database when files change:
-
-```bash
-# Watch the current directory
-luckyshot --watch
-
-# Watch with custom options
-luckyshot --watch --chunk-size 1000 --chunk-overlap 100
-```
-
 ### Scanning Files
 
 Generate embeddings for your codebase using the `scan` command:
 
 ```bash
 # Basic scan of all Rust files
-luckyshot scan "**/*.rs"
+luckyshot scan -p "**/*.rs"
 
 # Basic scan of all Rust and Markdown files
-luckyshot scan "**/*{.rs,.md}"
+luckyshot scan -p "**/*{.rs,.md}"
 
 # Scan with chunking enabled
-luckyshot scan --chunk-size 1000 --chunk-overlap 100 "src/**/*.rs"
+luckyshot scan --chunk-size 1000 --chunk-overlap 100 -p "src/**/*.rs"
 
 # Include file metadata in embeddings
 luckyshot scan --embed-metadata "*.{rs,md}"
 
 # Scan with all options
-luckyshot scan --chunk-size 1000 --chunk-overlap 100 --embed-metadata "**/*.rs"
+luckyshot scan --chunk-size 1000 --chunk-overlap 100 --embed-metadata -p "**/*.rs"
 ```
 
 The scan command:
@@ -65,48 +51,37 @@ To find files related to a topic or question:
 
 ```bash
 # Basic file suggestion
-luckyshot suggest-files --prompt "how does the scanning work?"
+luckyshot suggest-files -p "how does the scanning work?"
 
 # Using piped input
 echo "how does error handling work?" | luckyshot suggest-files
 
 # Filter results by similarity score (matches >= specified value, range 0.0 to 1.0)
-luckyshot suggest-files --prompt "error handling" --filter-similarity 0.5
+luckyshot suggest-files -p "error handling" --filter-similarity 0.5
 
 # Show detailed information including similarity scores
-luckyshot suggest-files --prompt "file scanning" --verbose
+luckyshot suggest-files -p "file scanning" --verbose
 
 # Show file contents of matches
-luckyshot suggest-files --prompt "metadata handling" --file-contents
+luckyshot suggest-files -p "metadata handling" --file-contents
 
 # Limit number of results
-luckyshot suggest-files --prompt "openai" --count 5
+luckyshot suggest-files -p "openai" --count 5
 
 # Combine options
-luckyshot suggest-files --prompt "embedding" --verbose --file-contents --filter-similarity 0.7 --count 3
+luckyshot suggest-files -p "embedding" --verbose --file-contents --filter-similarity 0.7 --count 3
+
+ # Chain commands Unix-style                                                                                                                                                              
+ echo "what openai url am I using" | \                                                                                                                                                    
+   luckyshot expand "you are a rust expert who describes their \                                                                                                                          
+      question and the files you are looking for" | \                                                                                                                                     
+   luckyshot suggest-files --verbose  
 ```
 
 This will:
 1. Convert your query into an embedding
-2. Use BM25-style ranking to find similar files
+2. Use cross-product ranking to find similar file embedding
 3. Display relevant files with similarity scores
-
-### One-Shot Code Generation
-
-Make targeted code changes by having luckyshot select relevant files and run a one-time code generation:
-
-```bash
-# Make a simple change
-luckyshot "make the background color green"
-
-# More complex changes
-luckyshot "add error handling to the file processing functions"
-```
-
-The one-shot generation:
-1. Analyzes your request
-2. Uses RAG to find relevant files
-3. Makes focused changes to just those files
 
 ### Expanding Context
 
@@ -128,6 +103,10 @@ Or create a `.env` file:
 ```
 OPENAI_API_KEY=your-api-key
 ```
+
+## Experimental
+
+BM25 tokinization and ranking.
 
 ## License
 
