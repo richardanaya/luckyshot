@@ -22,11 +22,35 @@ mod tests {
 
     #[test]
     fn test_tokenize_code() {
-        let code = "fn hello_world() { println!(\"Hello, world!\"); }";
+        let code = r#"
+            #[derive(Debug)]
+            struct Point<T> {
+                x: T,
+                y: T,
+            }
+            
+            impl<T> Point<T> {
+                fn new(x: T, y: T) -> Self {
+                    Point { x, y }
+                }
+            }
+            
+            fn main() {
+                let point = Point::new(10.5, 20.0);
+                println!("Point: {:?}", point);
+            }
+        "#;
+        
         let tokens = tokenize_code(code);
-        assert_eq!(
-            tokens,
-            vec!["fn", "hello_world", "println", "Hello", "world"]
-        );
+        let expected = vec![
+            "derive", "Debug", "struct", "Point", "T",
+            "x", "T", "y", "T", "impl", "T", "Point",
+            "T", "fn", "new", "x", "T", "y", "T", "Self",
+            "Point", "x", "y", "fn", "main", "let", "point",
+            "Point", "new", "10.5", "20.0", "println",
+            "Point", "point"
+        ];
+        
+        assert_eq!(tokens, expected);
     }
 }
