@@ -102,11 +102,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 std::io::stdin().read_to_string(&mut buffer)?;
                 buffer.trim().to_string()
             } else {
-                prompt.join(" ")
+                prompt.join(" ").trim().to_string()
             };
 
             if prompt_text.is_empty() {
-                eprintln!("Error: You must provide a prompt to search by, either as arguments or via stdin");
+                eprintln!("Error: No prompt given");
                 std::process::exit(1);
             }
 
