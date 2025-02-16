@@ -6,35 +6,84 @@ pub struct FileEmbedding {
     pub filename: String,
     pub vector: Vec<f32>,
     pub last_modified: u64,
+    pub chunk_offset: usize,  // Starting position of chunk in file
+    pub chunk_size: usize,    // Size of this chunk (might be smaller for last chunk)
+    pub is_full_file: bool,   // Whether this is a full file embedding or a chunk
 }
 
-pub async fn scan_files(pattern: &str, api_key: &str, _chunk_size: usize, _overlap_size: usize) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn scan_files(pattern: &str, api_key: &str, chunk_size: usize, overlap_size: usize) -> Result<(), Box<dyn std::error::Error>> {
+    if chunk_size > 0 && overlap_size >= chunk_size {
+        return Err("overlap_size must be less than chunk_size".into());
+    }
     println!("Scanning for files matching pattern: {}", pattern);
     let mut file_embeddings: Vec<FileEmbedding> = Vec::new();
 
-    async fn process_file(path: &std::path::Path, path_str: &str, file_embeddings: &mut Vec<FileEmbedding>, api_key: &str) -> Result<(), Box<dyn std::error::Error>> {
-        println!("Processing: {}", path_str);
+    fn create_chunks(content: &str, chunk_size: usize, overlap_size: usize) -> Vec<(usize, String)> {
+        if chunk_size == 0 {
+            return vec![(0, content.to_string())];
+        }
+
+        let mut chunks = Vec::new();
+        let content_len = content.len();
+        let mut offset = 0;
+
+        while offset < content_len {
+            let end = (offset + chunk_size).min(content_len);
+            let chunk = content[offset..end].to_string();
+            chunks.push((offset, chunk));
         
+            if end == content_len {
+                break;
+            }
+        
+            offset += chunk_size - overlap_size;
+        }
+
+        chunks
+    }
+
+    async fn process_file(
+        path: &std::path::Path,
+        path_str: &str,
+        file_embeddings: &mut Vec<FileEmbedding>,
+        api_key: &str,
+        chunk_size: usize,
+        overlap_size: usize,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        println!("Processing: {}", path_str);
+    
         match fs::read_to_string(path) {
             Ok(contents) => {
-                match crate::openai::get_embedding(&contents, api_key).await {
-                    Ok(embedding) => {
-                        println!("Got embedding for {}", path_str);
-                        let metadata = fs::metadata(path)?;
-                        let last_modified = metadata.modified()?.duration_since(std::time::UNIX_EPOCH)?.as_secs();
+                let chunks = create_chunks(&contents, chunk_size, overlap_size);
+            
+                for (offset, chunk_content) in chunks {
+                    match crate::openai::get_embedding(&chunk_content, api_key).await {
+                        Ok(embedding) => {
+                            let metadata = fs::metadata(path)?;
+                            let last_modified = metadata.modified()?.duration_since(std::time::UNIX_EPOCH)?.as_secs();
                         
-                        file_embeddings.push(FileEmbedding {
-                            filename: path_str.to_string(),
-                            vector: embedding,
-                            last_modified,
-                        });
-                        Ok(())
+                            file_embeddings.push(FileEmbedding {
+                                filename: path_str.to_string(),
+                                vector: embedding,
+                                last_modified,
+                                chunk_offset: offset,
+                                chunk_size: chunk_content.len(),
+                                is_full_file: chunk_size == 0,
+                            });
+                        
+                            if chunk_size > 0 {
+                                println!("Got embedding for {} (chunk offset: {})", path_str, offset);
+                            } else {
+                                println!("Got embedding for {}", path_str);
+                            }
+                        }
+                        Err(e) => {
+                            eprintln!("Error getting embedding for {}: {}", path_str, e);
+                            return Err(e);
+                        }
                     }
-                    Err(e) => {
-                        eprintln!("Error getting embedding for {}: {}", path_str, e);
-                        Err(e)
-                    },
                 }
+                Ok(())
             }
             Err(e) => {
                 eprintln!("Error reading file {}: {}", path_str, e);
@@ -56,7 +105,7 @@ pub async fn scan_files(pattern: &str, api_key: &str, _chunk_size: usize, _overl
             continue;
         }
         
-        process_file(&path, &path_str, &mut file_embeddings, api_key).await;
+        process_file(&path, &path_str, &mut file_embeddings, api_key, chunk_size, overlap_size).await?;
     }
 
     // Save embeddings to file
