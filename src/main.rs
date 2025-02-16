@@ -120,7 +120,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             match openai::get_embedding(&prompt_text, &api_key).await {
                 Ok(embedding) => {
-                    let _related_files = search::find_related_files(embedding, filter_similarity, verbose, file_contents, count).await;
+                    if let Err(e) = search::find_related_files(embedding, filter_similarity, verbose, file_contents, count).await {
+                        eprintln!("Error finding related files: {}", e);
+                    }
                 }
                 Err(e) => {
                     eprintln!("Error getting embedding: {}", e);

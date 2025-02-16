@@ -7,7 +7,7 @@ pub struct FileMatch {
     pub similarity: f32,
 }
 
-pub async fn find_related_files(query_embedding: Vec<f32>, filter_similarity: f32, verbose: bool, file_contents: bool, count: usize) -> Vec<String> {
+pub async fn find_related_files(query_embedding: Vec<f32>, filter_similarity: f32, verbose: bool, file_contents: bool, count: usize) -> Result<Vec<String>, Box<dyn std::error::Error>> {
     // Load the vectors file
     let vectors_content = match fs::read_to_string(".luckyshot.file.vectors.v1") {
         Ok(content) => content,
@@ -123,5 +123,5 @@ pub async fn find_related_files(query_embedding: Vec<f32>, filter_similarity: f3
     }
 
     // Return just the filenames
-    final_matches.iter().map(|m| m.filename.clone()).collect()
+    Ok(final_matches.iter().map(|m| m.filename.clone()).collect())
 }
