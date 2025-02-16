@@ -1,3 +1,5 @@
+use bm25::ScoredDocument;
+
 use crate::scan::FileVectorStore;
 use std::fs;
 
@@ -35,7 +37,7 @@ pub async fn find_related_files(
     };
 
     // Perform BM25 ranking
-    let bm25_results = crate::bm25_ranker::rank_documents(&store, query_text, store.bm25_avgdl);
+    let mut bm25_results = crate::bm25_ranker::rank_documents(&store, query_text, store.bm25_avgdl);
 
     // Get query embedding and calculate similarity for each file
     let query_embedding = match crate::openai::get_embedding(query_text, api_key).await {
@@ -101,25 +103,25 @@ pub async fn find_related_files(
     let min_bm25 = -max_extent;
     let max_bm25 = max_extent;
 
-    // Normalize BM25 scores to -1 to 1 range
-    for m in matches.iter_mut() {
-        // Find corresponding BM25 score by matching filename
-        if let Some(bm25_result) = bm25_results.iter().find(|r| r.id.to_string() == m.filename) {
-            m.similarity = (bm25_result.score - min_bm25) / (max_bm25 - min_bm25) * 2.0 - 1.0;
-        }
-    }
+    // normalize bm25_results from 0-1 to -1 to 1
+    bm25_results.iter_mut().for_each(|m| {
+        // if score is negativee
+        let normalized = if m.score < 0.0 {
+            -(m.score / min_bm25)
+        } else {
+            m.score / max_bm25
+        };
 
-    // for each missing file in bm25_results, add it to the matches with a similarity of 0
-    for bm25_result in &bm25_results {
-        if !matches
-            .iter()
-            .any(|m| m.filename == bm25_result.id.to_string())
-        {
-            matches.push(FileMatch {
-                filename: bm25_result.id.to_string(),
-                similarity: 0.0,
-            });
+        m.score = normalized;
+    });
+
+    if debug {
+        // print out normalized BM25 distances
+        println!("Normalized BM25 distances:");
+        for m in &bm25_results {
+            println!("{} {}", m.score, store.bm25_files[m.id as usize].filename);
         }
+        println!("\n");
     }
 
     // Find min and max similarities for normalization
@@ -140,22 +142,74 @@ pub async fn find_related_files(
     }
 
     if debug {
-        // print out the normalized bm25
-        println!("Normalized BM25:");
+        // print out normalized RAG distances
+        println!("Normalized RAG distances:");
         for m in &matches {
             println!("{} {}", m.similarity, m.filename);
         }
         println!("\n");
+    }
 
-        // print out the normalized rag
-        println!("Normalized RAG:");
-        for m in &matches {
+    // lets add BM25 scores to the matches if there's a file there, or 0
+    let mut matches_with_hybrid_scores = matches
+        .iter()
+        .map(|m| {
+            let bm25_score = bm25_results
+                .iter()
+                .find(|b| {
+                    b.id == store
+                        .bm25_files
+                        .iter()
+                        .position(|f| f.filename == m.filename)
+                        .unwrap() as u32
+                })
+                .map_or(0.0, |b| b.score);
+            FileMatch {
+                filename: m.filename.clone(),
+                similarity: (m.similarity + bm25_score) / 2.0,
+            }
+        })
+        .collect::<Vec<_>>();
+
+    // Sort matches by similarity
+    matches_with_hybrid_scores.sort_by(|a, b| b.similarity.partial_cmp(&a.similarity).unwrap());
+
+    if debug {
+        // print out normalized RAG distances
+        println!("Hybrid RAG distances:");
+        for m in &matches_with_hybrid_scores {
             println!("{} {}", m.similarity, m.filename);
+        }
+        println!("\n");
+    }
+
+    // Normalize hybrid scores to 0-1 range
+    let min_hybrid = matches_with_hybrid_scores
+        .iter()
+        .map(|m| m.similarity)
+        .fold(f32::INFINITY, f32::min);
+    let max_hybrid = matches_with_hybrid_scores
+        .iter()
+        .map(|m| m.similarity)
+        .fold(f32::NEG_INFINITY, f32::max);
+
+    if (max_hybrid - min_hybrid).abs() > f32::EPSILON {
+        for m in &mut matches_with_hybrid_scores {
+            m.similarity = (m.similarity - min_hybrid) / (max_hybrid - min_hybrid);
         }
     }
 
+    if debug {
+        // print out normalized RAG distances
+        println!("Normalized Hybrid distances:");
+        for m in &matches_with_hybrid_scores {
+            println!("{} {}", m.similarity, m.filename);
+        }
+        println!("\n");
+    }
+
     // First filter by similarity threshold
-    let similarity_filtered: Vec<&FileMatch> = matches
+    let similarity_filtered: Vec<&FileMatch> = matches_with_hybrid_scores
         .iter()
         .filter(|m| m.similarity >= filter_similarity)
         .collect();
