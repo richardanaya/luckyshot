@@ -3,7 +3,7 @@ use std::fs;
 
 #[derive(Serialize, Deserialize)]
 pub struct FileVectorStore {
-    pub rag_vectors: Vec<FileEmbedding>,
+    pub rag_vectors: Vec<RagEmbeddedFileChunk>,
     pub pattern: String,
     pub chunk_size: usize,
     pub overlap_size: usize,
@@ -12,7 +12,7 @@ pub struct FileVectorStore {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct FileEmbedding {
+pub struct RagEmbeddedFileChunk {
     pub filename: String,
     pub vector: Vec<f32>,
     pub bm25_indices: Vec<u32>,
@@ -115,7 +115,7 @@ pub async fn scan_files(
                             let bm25_vec =
                                 crate::bm25_embedder::create_bm25_vector(&content_to_embed, 200.0);
 
-                            store.rag_vectors.push(FileEmbedding {
+                            store.rag_vectors.push(RagEmbeddedFileChunk {
                                 filename: path_str.to_string(),
                                 vector: embedding,
                                 bm25_indices: bm25_vec.indices,
