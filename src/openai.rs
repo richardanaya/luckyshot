@@ -152,28 +152,6 @@ struct Usage {
     total_tokens: i32,
 }
 
-#[derive(Debug, Serialize)]
-struct ChatRequest {
-    model: String,
-    messages: Vec<ChatMessage>,
-}
-
-#[derive(Debug, Deserialize)]
-struct ChatResponse {
-    choices: Vec<ChatChoice>,
-}
-
-#[derive(Debug, Deserialize)]
-struct ChatChoice {
-    message: ChatMessage,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct ChatMessage {
-    role: String,
-    content: String,
-}
-
 pub async fn get_chat_completion(prompt: &str, api_key: &str) -> Result<String, Box<dyn Error>> {
     let client = Client::new();
     let request = ChatRequest {
