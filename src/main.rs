@@ -7,6 +7,7 @@ mod bm25;
 mod files;
 mod openai;
 mod scan;
+mod search;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -118,7 +119,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             match openai::get_embedding(&prompt_text, &api_key).await {
                 Ok(embedding) => {
-                    let _related_files = openai::find_related_files(embedding, filter_similarity, verbose, file_contents, count).await;
+                    let _related_files = search::find_related_files(embedding, filter_similarity, verbose, file_contents, count).await;
                 }
                 Err(e) => {
                     eprintln!("Error getting embedding: {}", e);
