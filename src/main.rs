@@ -1,6 +1,7 @@
 use clap::{Parser, Subcommand};
 use dotenvy::dotenv;
 use std::env;
+use std::io::Read;
 
 mod files;
 mod openai;

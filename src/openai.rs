@@ -154,7 +154,7 @@ struct Usage {
 
 pub async fn get_chat_completion(prompt: &str, api_key: &str) -> Result<String, Box<dyn Error>> {
     let client = Client::new();
-    let request = ChatRequest {
+    let request = AnthropicChatRequest {
         model: "claude-3-opus-20240229".to_string(),
         messages: vec![ChatMessage {
             role: "user".to_string(),
@@ -171,8 +171,8 @@ pub async fn get_chat_completion(prompt: &str, api_key: &str) -> Result<String, 
         .send()
         .await?;
 
-    let chat_response: ChatResponse = response.json().await?;
-    Ok(chat_response.choices[0].message.content.clone())
+    let chat_response: AnthropicChatResponse = response.json().await?;
+    Ok(chat_response.content[0].text.clone())
 }
 
 pub async fn get_openai_chat_completion(prompt: &str, system_prompt: &str, api_key: &str) -> Result<String, Box<dyn Error>> {
