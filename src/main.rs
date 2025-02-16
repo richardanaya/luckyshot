@@ -98,9 +98,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 std::process::exit(1);
             }
             let prompt_text = if prompt.is_empty() {
-                let mut buffer = String::new();
-                std::io::stdin().read_to_string(&mut buffer)?;
-                buffer.trim().to_string()
+                // Only try to read from stdin if it's not a terminal
+                if atty::isnt(atty::Stream::Stdin) {
+                    let mut buffer = String::new();
+                    std::io::stdin().read_to_string(&mut buffer)?;
+                    buffer.trim().to_string()
+                } else {
+                    String::new()
+                }
             } else {
                 prompt.join(" ").trim().to_string()
             };
