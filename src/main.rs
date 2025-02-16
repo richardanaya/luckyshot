@@ -35,10 +35,10 @@ enum Commands {
         embed_metadata: bool,
     },
 
-    /// Ask a question about the codebase
+    /// Suggest relevant files based on a query
     #[command(trailing_var_arg = true)]
-    Ask {
-        /// The question to ask (optional if using stdin)
+    SuggestFiles {
+        /// The query to find relevant files (optional if using stdin)
         #[arg(trailing_var_arg = true)]
         prompt: Vec<String>,
     },
@@ -76,7 +76,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
             scan::scan_files(&pattern, &api_key, chunk_size, overlap_size, embed_metadata).await?;
         }
-        Commands::Ask { prompt } => {
+        Commands::SuggestFiles { prompt } => {
             let prompt_text = if prompt.is_empty() {
                 let mut buffer = String::new();
                 std::io::stdin().read_to_string(&mut buffer)?;
