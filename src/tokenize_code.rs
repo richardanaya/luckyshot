@@ -158,7 +158,7 @@ mod tests {
         let tokens = tokenize_code(code, "test.js");
         let expected = vec![
             "function", "calculateSum", "a", "b",
-            "return", "a", "b",
+            "return", "a", "+", "b",
             "const", "result", "calculateSum", "10", "20",
             "console", "log", "Result", "result"
         ];
