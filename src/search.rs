@@ -1,5 +1,3 @@
-use bm25::ScoredDocument;
-
 use crate::scan::FileVectorStore;
 use std::fs;
 
