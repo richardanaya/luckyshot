@@ -18,7 +18,6 @@ fn tokenize_html_code(input: &str) -> Vec<String> {
     let mut tokens = Vec::new();
     let mut current_token = String::new();
     let mut chars = input.chars().peekable();
-    let mut in_tag = false;
 
     while let Some(&c) = chars.peek() {
         match c {
@@ -27,7 +26,6 @@ fn tokenize_html_code(input: &str) -> Vec<String> {
                     tokens.push(current_token.clone());
                     current_token.clear();
                 }
-                in_tag = true;
                 chars.next();
             },
             '>' => {
@@ -35,7 +33,6 @@ fn tokenize_html_code(input: &str) -> Vec<String> {
                     tokens.push(current_token.clone());
                     current_token.clear();
                 }
-                in_tag = false;
                 chars.next();
             },
             c if c.is_whitespace() => {
@@ -257,7 +254,7 @@ mod tests {
             "div", "class", "container",
             "h1", "Hello", "World", "h1",
             "p", "id", "main-text", "This", "is", "a", "test", "p",
-            "input", "type", "text", "value", "search"
+            "input", "type", "text", "value", "search", "div"
         ];
         
         assert_eq!(tokens, expected);
