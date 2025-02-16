@@ -61,9 +61,18 @@ pub async fn find_related_files(query_embedding: Vec<f32>) -> Vec<String> {
     // Sort by normalized similarity (highest first)
     matches.sort_by(|a, b| b.similarity.partial_cmp(&a.similarity).unwrap());
 
-    // Print matches with normalized similarity scores in CSV format
+    // Print matches with normalized similarity scores, chunk info in CSV format
     for m in &matches {
-        println!("{:.3},{}", m.similarity, m.filename);
+        let embedding = file_embeddings.iter()
+            .find(|e| e.filename == m.filename)
+            .unwrap();
+        println!("{:.3},{},{},{},{}",
+            m.similarity,
+            m.filename,
+            if embedding.is_full_file { "full" } else { "chunk" },
+            embedding.chunk_offset,
+            embedding.chunk_size
+        );
     }
 
     // Return filenames only
