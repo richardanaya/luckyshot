@@ -55,7 +55,7 @@ struct EmbeddingRequest {
     model: String,
 }
 
-pub async fn find_related_files(query_embedding: Vec<f32>, filter_similarity: f32) -> Vec<String> {
+pub async fn find_related_files(query_embedding: Vec<f32>, filter_similarity: f32, verbose: bool) -> Vec<String> {
     // Load the vectors file
     let vectors_content = match fs::read_to_string(".luckyshot.file.vectors.v1") {
         Ok(content) => content,
@@ -100,23 +100,28 @@ pub async fn find_related_files(query_embedding: Vec<f32>, filter_similarity: f3
     // Sort by normalized similarity (highest first)
     matches.sort_by(|a, b| b.similarity.partial_cmp(&a.similarity).unwrap());
 
-    // Filter matches by similarity threshold and print remaining ones
+    // Filter matches by similarity threshold
     let filtered_matches: Vec<_> = matches.iter()
         .filter(|m| m.similarity >= filter_similarity)
         .collect();
 
-    // Print filtered matches with normalized similarity scores, chunk info in CSV format
+    // Print matches according to verbosity
     for m in &filtered_matches {
         let embedding = file_embeddings.iter()
             .find(|e| e.filename == m.filename)
             .unwrap();
-        println!("{:.3},{},{},{},{}",
-            m.similarity,
-            m.filename,
-            if embedding.is_full_file { "full" } else { "chunk" },
-            embedding.chunk_offset,
-            embedding.chunk_size
-        );
+        
+        if verbose {
+            println!("{:.3},{},{},{},{}",
+                m.similarity,
+                m.filename,
+                if embedding.is_full_file { "full" } else { "chunk" },
+                embedding.chunk_offset,
+                embedding.chunk_size
+            );
+        } else {
+            println!("{}", m.filename);
+        }
     }
 
     // Return filenames only
