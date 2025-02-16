@@ -21,6 +21,22 @@ struct OpenAIChatChoice {
     message: ChatMessage,
 }
 
+#[derive(Debug, Serialize)]
+struct AnthropicChatRequest {
+    model: String,
+    messages: Vec<ChatMessage>,
+}
+
+#[derive(Debug, Deserialize)]
+struct AnthropicChatResponse {
+    content: Vec<AnthropicContent>,
+}
+
+#[derive(Debug, Deserialize)]
+struct AnthropicContent {
+    text: String,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 struct ChatMessage {
     role: String,
