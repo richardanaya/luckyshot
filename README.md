@@ -1,16 +1,17 @@
-
 <p align="center">
   <img src="https://github.com/user-attachments/assets/b58cd03b-1cd8-4d97-b0e1-5498c83df2a3" alt="Description" width="300">
 </p>
 
-A powerful CLI tool that enhances code understanding by using RAG (Retrieval Augmented Generation) to find relevant files in your codebase.
+A powerful CLI tool that enhances code understanding and automation using RAG (Retrieval Augmented Generation) to find and modify relevant files in your codebase.
 
 ## Features
 
 - File scanning with customizable chunk sizes and overlap
-- Semantic search using OpenAI embeddings
+- Semantic search using OpenAI embeddings and BM25 ranking
 - Support for piped input and file suggestions
 - Intelligent context expansion
+- File watching and automatic RAG database updates
+- One-shot code generation with targeted file selection
 
 ## Installation
 
@@ -19,6 +20,18 @@ cargo install luckyshot
 ```
 
 ## Usage
+
+### Watching Files
+
+Start luckyshot in watch mode to automatically update the RAG database when files change:
+
+```bash
+# Watch the current directory
+luckyshot --watch
+
+# Watch with custom options
+luckyshot --watch --chunk-size 1000 --chunk-overlap 100
+```
 
 ### Scanning Files
 
@@ -71,19 +84,29 @@ luckyshot suggest-files --prompt "openai" --count 5
 
 # Combine options
 luckyshot suggest-files --prompt "embedding" --verbose --file-contents --filter-similarity 0.7 --count 3
-
-# Chain commands Unix-style
-echo "what openai url am I using" | \
-  luckyshot expand "you are a rust expert who describes their \
-     question and the files you are looking for" | \
-  luckyshot suggest-files --verbose
 ```
 
 This will:
-1. Expand your prompt into something with more features to match similarity by
-2. Convert your query into an embedding
-3. Use BM25-style ranking to find similar files
-4. Display relevant files with similarity scores
+1. Convert your query into an embedding
+2. Use BM25-style ranking to find similar files
+3. Display relevant files with similarity scores
+
+### One-Shot Code Generation
+
+Make targeted code changes by having luckyshot select relevant files and run a one-time code generation:
+
+```bash
+# Make a simple change
+luckyshot "make the background color green"
+
+# More complex changes
+luckyshot "add error handling to the file processing functions"
+```
+
+The one-shot generation:
+1. Analyzes your request
+2. Uses RAG to find relevant files
+3. Makes focused changes to just those files
 
 ### Expanding Context
 
