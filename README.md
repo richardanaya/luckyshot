@@ -89,7 +89,7 @@ This will:
 To expand a query with additional context:
 
 ```bash
-luckyshot expand --prompt "describe the implementation" --system-prompt "You are a helpful assistant"
+luckyshot expand --system-prompt "You are a helpful assistant" --prompt "describe the implementation"
 ```
 
 ## Environment Setup

@@ -68,7 +68,7 @@ enum Commands {
         system_prompt: String,
 
         /// The prompt to expand (optional if using stdin)
-        #[arg(required = false)]
+        #[arg(long, required = false)]
         prompt: Option<String>,
     },
 }
