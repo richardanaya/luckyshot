@@ -23,7 +23,7 @@ This dual approach helps ensure you don't miss important context when using AI t
 
 # Warnings!
 
-This tool is alpha and not thoroughly evalulated with real world tests.
+This tool is alpha and not thoroughly evalulated with real world tests.  Be aware of the costs of embedding vectors!
 
 ## Features
 
