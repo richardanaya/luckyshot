@@ -2,7 +2,24 @@
   <img src="https://github.com/user-attachments/assets/b58cd03b-1cd8-4d97-b0e1-5498c83df2a3" alt="Description" width="300">
 </p>
 
-A powerful CLI tool that enhances code understanding and automation using RAG (Retrieval Augmented Generation) to find relevant files in your codebase.
+A powerful CLI tool that enhances code understanding and automation by finding the most relevant files in your codebase for AI-assisted programming.
+
+## Why This Tool?
+
+Finding the right files to manipulate with AI is crucial for effective code generation and modification. Traditional approaches like grep or fuzzy finding often miss semantically relevant files that don't contain exact keyword matches.
+
+This tool uses a hybrid approach combining two powerful search techniques:
+
+1. BM25 Ranking: A battle-tested information retrieval algorithm (used by search engines) that excels at keyword matching while accounting for term frequency and document length. It's particularly good at finding files containing specific technical terms or function names.
+
+2. RAG (Retrieval Augmented Generation) with Embedding Distance: Uses OpenAI's embeddings to capture the semantic meaning of both your query and codebase. By measuring vector dot product distances, it can find conceptually related files even when they use different terminology.
+
+The hybrid scoring system combines both approaches:
+- BM25 helps catch direct matches and technical terms
+- Embedding distance captures semantic relationships and higher-level concepts
+- Results are normalized and merged to give you the most relevant files for your task
+
+This dual approach helps ensure you don't miss important context when using AI to modify your codebase.
 
 ## Features
 
