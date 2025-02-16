@@ -25,8 +25,6 @@ pub struct Bm25EmbeddedFile {
 pub struct RagEmbeddedFileChunk {
     pub filename: String,
     pub vector: Vec<f32>,
-    pub bm25_indices: Vec<u32>,
-    pub bm25_values: Vec<f32>,
     pub last_modified: u64,
     pub chunk_offset: usize, // Starting position of chunk in file
     pub chunk_size: usize,   // Size of this chunk (might be smaller for last chunk)
@@ -140,8 +138,6 @@ pub async fn scan_files(
                     store.rag_vectors.push(RagEmbeddedFileChunk {
                         filename: path_str.to_string(),
                         vector: embedding,
-                        bm25_indices: Vec::new(), // Empty since BM25 is now per-file
-                        bm25_values: Vec::new(),  // Empty since BM25 is now per-file
                         last_modified,
                         chunk_offset: offset,
                         chunk_size: chunk_content.len(),
