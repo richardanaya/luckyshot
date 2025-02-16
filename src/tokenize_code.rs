@@ -1,18 +1,79 @@
-/// Tokenizes code into a vector of strings, handling common code patterns
+/// Tokenizes code into a vector of strings, handling common Rust code patterns
 pub fn tokenize_code(input: &str) -> Vec<String> {
-    // Split on whitespace and common code delimiters
-    input
-        .split(|c: char| {
-            c.is_whitespace() || 
-            c == '(' || c == ')' ||
-            c == '{' || c == '}' ||
-            c == '[' || c == ']' ||
-            c == '.' || c == ',' ||
-            c == ';' || c == ':' ||
-            c == '"' || c == '\''
-        })
-        .filter(|s| !s.is_empty()) // Remove empty strings
-        .map(|s| s.to_string())
+    let mut tokens = Vec::new();
+    let mut current_token = String::new();
+    let mut chars = input.chars().peekable();
+
+    while let Some(&c) = chars.peek() {
+        match c {
+            // Skip whitespace
+            c if c.is_whitespace() => {
+                if !current_token.is_empty() {
+                    tokens.push(current_token.clone());
+                    current_token.clear();
+                }
+                chars.next();
+            },
+            // Handle numbers (including floating point)
+            c if c.is_numeric() || c == '.' => {
+                if current_token.is_empty() || current_token.chars().next().unwrap().is_numeric() {
+                    current_token.push(c);
+                } else {
+                    tokens.push(current_token.clone());
+                    current_token.clear();
+                    current_token.push(c);
+                }
+                chars.next();
+            },
+            // Handle special characters and operators
+            '<' | '>' | '(' | ')' | '{' | '}' | '[' | ']' | ',' | ';' | ':' | '"' | '\'' => {
+                if !current_token.is_empty() {
+                    tokens.push(current_token.clone());
+                    current_token.clear();
+                }
+                chars.next();
+            },
+            // Handle special tokens
+            '-' => {
+                if !current_token.is_empty() {
+                    tokens.push(current_token.clone());
+                    current_token.clear();
+                }
+                chars.next();
+                if chars.peek() == Some(&'>') {
+                    tokens.push("->".to_string());
+                    chars.next();
+                }
+            },
+            '!' => {
+                if !current_token.is_empty() {
+                    tokens.push(current_token);
+                    current_token = String::new();
+                }
+                current_token.push(c);
+                chars.next();
+            },
+            '#' => {
+                chars.next();
+                if !current_token.is_empty() {
+                    tokens.push(current_token.clone());
+                    current_token.clear();
+                }
+            },
+            // Build identifiers and other tokens
+            _ => {
+                current_token.push(c);
+                chars.next();
+            }
+        }
+    }
+
+    if !current_token.is_empty() {
+        tokens.push(current_token);
+    }
+
+    tokens.into_iter()
+        .filter(|s| !s.is_empty())
         .collect()
 }
 
