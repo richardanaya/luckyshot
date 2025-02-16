@@ -40,10 +40,18 @@ enum Commands {
         /// The question to ask
         #[arg(required = true)]
         prompt: Vec<String>,
+    },
 
-        /// Optional system prompt for expanding the question
-        #[arg(long)]
-        prompt_expansion: Option<String>,
+    /// Expand a prompt using a system prompt
+    #[command(trailing_var_arg = true)]
+    Expand {
+        /// The prompt to expand
+        #[arg(required = true)]
+        prompt: Vec<String>,
+
+        /// System prompt for expanding the question
+        #[arg(required = true)]
+        system_prompt: String,
     },
 }
 
@@ -63,30 +71,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
             scan::scan_files(&pattern, &api_key, chunk_size, overlap_size, embed_metadata).await?;
         }
-        Commands::Ask { prompt, prompt_expansion } => {
+        Commands::Ask { prompt } => {
             let prompt = prompt.join(" ");
             println!("Answering question: {}", prompt);
 
-            // If prompt_expansion is provided, first expand the prompt
-            let expanded_prompt = if let Some(system_prompt) = prompt_expansion {
-                match openai::get_openai_chat_completion(&prompt, &system_prompt, &api_key).await {
-                    Ok(expanded) => expanded,
-                    Err(e) => {
-                        eprintln!("Error expanding prompt: {}", e);
-                        prompt
-                    }
-                }
-            } else {
-                prompt
-            };
-
-            match openai::get_embedding(&expanded_prompt, &api_key).await {
+            match openai::get_embedding(&prompt, &api_key).await {
                 Ok(embedding) => {
                     let _related_files = openai::find_related_files(embedding).await;
                 }
                 Err(e) => {
                     eprintln!("Error getting embedding: {}", e);
                 }
+            }
+        }
+        Commands::Expand { prompt, system_prompt } => {
+            let prompt = prompt.join(" ");
+            println!("Expanding prompt: {}", prompt);
+            
+            match openai::get_openai_chat_completion(&prompt, &system_prompt, &api_key).await {
+                Ok(expanded) => println!("Expanded prompt: {}", expanded),
+                Err(e) => eprintln!("Error expanding prompt: {}", e),
             }
         }
     }
