@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
 
-pub async fn scan_files(pattern: &str, api_key: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn scan_files(pattern: &str, api_key: &str, chunk_size: usize, overlap_size: usize) -> Result<(), Box<dyn std::error::Error>> {
     println!("Scanning for files matching pattern: {}", pattern);
     let mut file_embeddings: HashMap<String, Vec<f32>> = HashMap::new();
 

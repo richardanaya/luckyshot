@@ -20,6 +20,14 @@ enum Commands {
         /// The glob pattern to match files
         #[arg(required = true)]
         pattern: String,
+
+        /// Size of chunks to split files into (0 for no chunking)
+        #[arg(long, default_value = "0")]
+        chunk_size: usize,
+
+        /// Size of overlap between chunks (0 for no overlap)
+        #[arg(long, default_value = "0")]
+        overlap_size: usize,
     },
 
     /// Ask a question about the codebase
@@ -40,8 +48,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Scan { pattern } => {
-            scan::scan_files(&pattern, &api_key).await?;
+        Commands::Scan { pattern, chunk_size, overlap_size } => {
+            if chunk_size > 0 && overlap_size >= chunk_size {
+                eprintln!("Error: overlap_size must be less than chunk_size");
+                std::process::exit(1);
+            }
+            scan::scan_files(&pattern, &api_key, chunk_size, overlap_size).await?;
         }
         Commands::Ask { prompt } => {
             let prompt = prompt.join(" ");
