@@ -2,6 +2,11 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 
 #[derive(Serialize, Deserialize)]
+pub struct FileVectorStore {
+    pub rag_vectors: Vec<FileEmbedding>,
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct FileEmbedding {
     pub filename: String,
     pub vector: Vec<f32>,
@@ -25,7 +30,9 @@ pub async fn scan_files(
         return Err("overlap_size must be less than chunk_size".into());
     }
     println!("Scanning for files matching pattern: {}", pattern);
-    let mut file_embeddings: Vec<FileEmbedding> = Vec::new();
+    let mut store = FileVectorStore {
+        rag_vectors: Vec::new(),
+    };
 
     fn create_chunks(
         content: &str,
@@ -96,7 +103,7 @@ pub async fn scan_files(
                             let bm25_vec =
                                 crate::bm25_embedder::create_bm25_vector(&content_to_embed, 200.0);
 
-                            file_embeddings.push(FileEmbedding {
+                            store.rag_vectors.push(FileEmbedding {
                                 filename: path_str.to_string(),
                                 vector: embedding,
                                 bm25_indices: bm25_vec.indices,
@@ -158,14 +165,14 @@ pub async fn scan_files(
     }
 
     // Save embeddings to file
-    match serde_json::to_string_pretty(&file_embeddings) {
+    match serde_json::to_string_pretty(&store) {
         Ok(json) => {
             if let Err(e) = fs::write(".luckyshot.file.vectors.v1", json) {
                 eprintln!("Error writing vectors file: {}", e);
             } else {
                 println!(
                     "Successfully saved vectors for {} chunks",
-                    file_embeddings.len()
+                    store.rag_vectors.len()
                 );
 
                 // Print celebratory figlet

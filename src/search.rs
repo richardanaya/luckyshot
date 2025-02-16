@@ -25,7 +25,7 @@ pub async fn find_related_files(
     };
 
     // Parse the JSON
-    let file_embeddings: Vec<FileEmbedding> = match serde_json::from_str(&vectors_content) {
+    let store: FileVectorStore = match serde_json::from_str(&vectors_content) {
         Ok(embeddings) => embeddings,
         Err(e) => {
             eprintln!("Error parsing vectors file: {}", e);
@@ -57,7 +57,7 @@ pub async fn find_related_files(
         }
     };
 
-    let mut matches: Vec<FileMatch> = file_embeddings
+    let mut matches: Vec<FileMatch> = store.rag_vectors
         .iter()
         .map(|embedding| {
             let similarity =
@@ -123,7 +123,7 @@ pub async fn find_related_files(
     if verbose {
         println!("Score,File,Type,Offset,Size");
         for m in &final_matches {
-            let embedding = file_embeddings
+            let embedding = store.rag_vectors
                 .iter()
                 .find(|e| e.filename == m.filename)
                 .unwrap();

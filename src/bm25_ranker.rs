@@ -17,11 +17,11 @@ pub fn create_embedding_from_indices_and_values(
     Embedding(token_embeddings)
 }
 
-pub fn rank_documents(embeddings: &[FileEmbedding], query: &str) -> Vec<ScoredDocument<u32>> {
+pub fn rank_documents(store: &FileVectorStore, query: &str) -> Vec<ScoredDocument<u32>> {
     println!("\n=== BM25 Ranking Debug ===");
     println!(
         "Ranking {} documents against query: {}",
-        embeddings.len(),
+        store.rag_vectors.len(),
         query
     );
 
@@ -29,12 +29,12 @@ pub fn rank_documents(embeddings: &[FileEmbedding], query: &str) -> Vec<ScoredDo
     let mut scorer = Scorer::<u32>::new();
 
     // Add each document to the scorer with its index as ID
-    for (i, e) in embeddings.iter().enumerate() {
+    for (i, e) in store.rag_vectors.iter().enumerate() {
         let emb =
             create_embedding_from_indices_and_values(e.bm25_indices.clone(), e.bm25_values.clone());
         println!(
             "Adding document {} to scorer with {} tokens",
-            embeddings[i].filename,
+            store.rag_vectors[i].filename,
             e.bm25_indices.len()
         );
         scorer.upsert(&(i as u32), emb);
