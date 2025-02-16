@@ -31,7 +31,7 @@ enum Commands {
 
         /// Size of overlap between chunks (0 for no overlap)
         #[arg(long, default_value = "0")]
-        overlap_size: usize,
+        chunk_overlap: usize,
 
         /// Include file metadata in embeddings
         #[arg(long, default_value = "false")]
@@ -86,14 +86,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Commands::Scan {
             pattern,
             chunk_size,
-            overlap_size,
+            chunk_overlap,
             embed_metadata,
         } => {
-            if chunk_size > 0 && overlap_size >= chunk_size {
-                eprintln!("Error: overlap_size must be less than chunk_size");
+            if chunk_size > 0 && chunk_overlap >= chunk_size {
+                eprintln!("Error: chunk-overlap must be less than chunk-size");
                 std::process::exit(1);
             }
-            scan::scan_files(&pattern, &api_key, chunk_size, overlap_size, embed_metadata).await?;
+            scan::scan_files(&pattern, &api_key, chunk_size, chunk_overlap, embed_metadata).await?;
         }
         Commands::SuggestFiles { prompt, filter_similarity, verbose, file_contents, count } => {
             if !(0.0..=1.0).contains(&filter_similarity) {

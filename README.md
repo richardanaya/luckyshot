@@ -32,13 +32,13 @@ luckyshot scan "**/*.rs"
 luckyshot scan "**/*{.rs,.md}"
 
 # Scan with chunking enabled
-luckyshot scan --chunk-size 1000 --overlap-size 100 "src/**/*.rs"
+luckyshot scan --chunk-size 1000 --chunk-overlap 100 "src/**/*.rs"
 
 # Include file metadata in embeddings
 luckyshot scan --embed-metadata "*.{rs,md}"
 
 # Scan with all options
-luckyshot scan --chunk-size 1000 --overlap-size 100 --embed-metadata "**/*.rs"
+luckyshot scan --chunk-size 1000 --chunk-overlap 100 --embed-metadata "**/*.rs"
 ```
 
 The scan command:
