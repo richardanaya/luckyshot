@@ -116,42 +116,41 @@ pub async fn find_related_files(query_embedding: Vec<f32>, filter_similarity: f3
         println!("Score,File,Type,Offset,Size");
     }
 
-    // Print matches according to verbosity and content settings
-    for m in &filtered_matches {
-        let embedding = file_embeddings.iter()
-            .find(|e| e.filename == m.filename)
-            .unwrap();
-        
-        if verbose {
-            println!("{:.3},{},{},{},{}",
-                m.similarity,
-                m.filename,
-                if embedding.is_full_file { "full" } else { "chunk" },
-                embedding.chunk_offset,
-                embedding.chunk_size
-            );
-        } else {
-            println!("{}", m.filename);
-        }
+    // Return filenames only from filtered matches and print their details
+    let result: Vec<String> = filtered_matches.iter()
+        .map(|m| {
+            let embedding = file_embeddings.iter()
+                .find(|e| e.filename == m.filename)
+                .unwrap();
+            
+            if verbose {
+                println!("{:.3},{},{},{},{}",
+                    m.similarity,
+                    m.filename,
+                    if embedding.is_full_file { "full" } else { "chunk" },
+                    embedding.chunk_offset,
+                    embedding.chunk_size
+                );
+            } else {
+                println!("{}", m.filename);
+            }
 
-        if file_contents {
-            if let Ok(contents) = std::fs::read_to_string(&embedding.filename) {
-                let start = embedding.chunk_offset;
-                let end = start + embedding.chunk_size;
-                if end <= contents.len() {
-                    println!("\n--- Content from {} ---", embedding.filename);
-                    println!("{}", &contents[start..end]);
-                    println!("--- End content ---\n");
+            if file_contents {
+                if let Ok(contents) = std::fs::read_to_string(&embedding.filename) {
+                    let start = embedding.chunk_offset;
+                    let end = start + embedding.chunk_size;
+                    if end <= contents.len() {
+                        println!("\n--- Content from {} ---", embedding.filename);
+                        println!("{}", &contents[start..end]);
+                        println!("--- End content ---\n");
+                    }
                 }
             }
-        }
-    }
-
-    // Return filenames only from filtered matches
-    filtered_matches.iter()
-        .map(|m| &m.filename)
-        .cloned()
-        .collect()
+            
+            m.filename.clone()
+        })
+        .collect();
+    result
 }
 
 fn bm25_similarity(query: &[f32], doc: &[f32]) -> f32 {
