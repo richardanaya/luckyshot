@@ -10,6 +10,7 @@ pub struct FileVectorStore {
     pub overlap_size: usize,
     pub embed_metadata: bool,
     pub date: u64,
+    pub avgdl: f32,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -55,7 +56,12 @@ pub async fn scan_files(
         date: std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)?
             .as_secs(),
+        avgdl: 0.0,
     };
+
+    // For calculating average document length
+    let mut total_tokens = 0;
+    let mut doc_count = 0;
 
     fn create_chunks(
         content: &str,
@@ -119,6 +125,11 @@ pub async fn scan_files(
         let tokens = crate::tokenize_code::tokenize_code(&content_to_embed, path_str);
         let deduped_tokens = crate::tokenize_code::deduplicate_tokens(tokens);
         
+        // Update token counts for avgdl
+        total_tokens += deduped_tokens.len();
+        doc_count += 1;
+        store.avgdl = total_tokens as f32 / doc_count as f32;
+
         // Store the BM25 embedding
         store.bm25_files.push(Bm25EmbeddedFile {
             filename: path_str.to_string(),
