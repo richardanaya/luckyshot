@@ -1,6 +1,6 @@
 use bm25::{DefaultTokenizer, Language, Tokenizer};
 
-pub fn get_tokenizer() -> impl Tokenizer + 'static {
+pub fn get_tokenizer() -> DefaultTokenizer {
     DefaultTokenizer::builder()
         .language_mode(Language::English)
         .normalization(true) // Normalize unicode (e.g., 'é' -> 'e', '🍕' -> 'pizza', etc.)
