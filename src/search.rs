@@ -66,7 +66,7 @@ pub async fn find_related_files(query_embedding: Vec<f32>, filter_similarity: f3
 
     // Return early if no matches
     if final_matches.is_empty() {
-        return Vec::new();
+        return Ok(Vec::new());
     }
 
     // Print results according to flags
