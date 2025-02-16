@@ -126,9 +126,34 @@ Or create a `.env` file:
 OPENAI_API_KEY=your-api-key
 ```
 
+## Hybrid Algorithm
+
+The tool uses a novel hybrid approach combining BM25 and embedding-based similarity:
+
+1. BM25 Scoring: Produces both positive and negative scores
+   - Positive scores indicate strong term matches
+   - Negative scores suggest term absence/dissimilarity
+   - Range varies based on document collection
+
+2. Embedding Dot Product: Always produces positive scores
+   - Higher values indicate semantic similarity
+   - Range typically 0 to 1 after normalization
+
+3. Score Normalization:
+   - BM25: Normalized to [-1, 1] range preserving sign
+   - Embeddings: Normalized to [0, 1] range
+   - Maintains relative importance within each scoring method
+
+4. Hybrid Scoring:
+   - Currently uses simple averaging: (normalized_bm25 + normalized_embedding) / 2
+   - Future plans include configurable weighting parameter
+   - Additional tokenization options coming soon
+
+This hybrid approach helps balance exact keyword matching (BM25) with semantic understanding (embeddings).
+
 ## Experimental
 
-BM25 tokinization and ranking.
+BM25 tokenization and ranking.
 
 ## License
 
