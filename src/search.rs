@@ -26,6 +26,18 @@ pub async fn find_related_files(query_embedding: Vec<f32>, filter_similarity: f3
         }
     };
 
+    // Perform BM25 ranking
+    let bm25_results = crate::bm25_ranker::rank_documents(&file_embeddings, &query_embedding.iter().map(|x| x.to_string()).collect::<Vec<_>>().join(" "));
+    
+    println!("\nBM25 ranks:");
+    for scored_doc in bm25_results {
+        let doc_index = scored_doc.document_id as usize;
+        if doc_index < file_embeddings.len() {
+            println!("{:.3}: {}", scored_doc.score, file_embeddings[doc_index].filename);
+        }
+    }
+    println!();
+
     // Calculate similarity for each file
     let mut matches: Vec<FileMatch> = file_embeddings
         .iter()
