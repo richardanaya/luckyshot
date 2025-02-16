@@ -48,8 +48,8 @@ enum Commands {
         #[arg(required = true)]
         system_prompt: String,
 
-        /// The prompt to expand
-        #[arg(required = true, trailing_var_arg = true)]
+        /// The prompt to expand (optional if using stdin)
+        #[arg(trailing_var_arg = true)]
         prompt: Vec<String>,
     },
 }
@@ -84,12 +84,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
         Commands::Expand { prompt, system_prompt } => {
-            let prompt = prompt.join(" ");
-            println!("Expanding prompt: {}", prompt);
-            
-            match openai::get_openai_chat_completion(&prompt, &system_prompt, &api_key).await {
-                Ok(expanded) => println!("Expanded prompt: {}", expanded),
-                Err(e) => eprintln!("Error expanding prompt: {}", e),
+            let prompt_text = if prompt.is_empty() {
+                // Read from stdin if no prompt arguments provided
+                let mut buffer = String::new();
+                std::io::stdin().read_line(&mut buffer)?;
+                buffer
+            } else {
+                prompt.join(" ")
+            };
+
+            if !prompt_text.trim().is_empty() {
+                println!("Expanding prompt: {}", prompt_text);
+                match openai::get_openai_chat_completion(&prompt_text, &system_prompt, &api_key).await {
+                    Ok(expanded) => println!("Expanded prompt: {}", expanded),
+                    Err(e) => eprintln!("Error expanding prompt: {}", e),
+                }
+            } else {
+                eprintln!("Error: No prompt provided via arguments or stdin");
+                std::process::exit(1);
             }
         }
     }
