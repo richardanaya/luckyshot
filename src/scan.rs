@@ -17,6 +17,8 @@ pub struct Bm25EmbeddedFile {
     pub filename: String,
     pub bm25_indices: Vec<u32>,
     pub bm25_values: Vec<f32>,
+    pub tokens: Vec<String>,
+    pub token_count: usize,
     pub last_modified: u64,
     pub has_metadata: bool,  // Whether metadata was included in the embedding
 }
@@ -113,11 +115,16 @@ pub async fn scan_files(
         // Generate BM25 vector for the entire file
         let bm25_vec = crate::bm25_embedder::create_bm25_vector(&content_to_embed, 200.0);
 
+        // Tokenize the content for BM25
+        let tokens = crate::tokenize_code::tokenize_code(&content_to_embed, path_str);
+        
         // Store the BM25 embedding
         store.bm25_files.push(Bm25EmbeddedFile {
             filename: path_str.to_string(),
             bm25_indices: bm25_vec.indices,
             bm25_values: bm25_vec.values,
+            tokens: tokens.clone(),
+            token_count: tokens.len(),
             last_modified,
             has_metadata: embed_metadata,
         });
