@@ -4,6 +4,7 @@ use std::fs;
 #[derive(Serialize, Deserialize)]
 pub struct FileVectorStore {
     pub rag_vectors: Vec<RagEmbeddedFileChunk>,
+    pub bm25_files: Vec<Bm25EmbeddedFile>,
     pub pattern: String,
     pub chunk_size: usize,
     pub overlap_size: usize,
