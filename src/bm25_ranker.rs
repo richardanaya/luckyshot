@@ -1,5 +1,6 @@
 use crate::scan::FileEmbedding;
-use bm25::{EmbedderBuilder, Language, ScoredDocument, Scorer};
+use bm25::{ScoredDocument, Scorer};
+use crate::bm25_embedder::create_bm25_vector;
 
 pub fn rank_documents(embeddings: &[FileEmbedding], query: &str) -> Vec<ScoredDocument<usize>> {
     // Create scorer and add documents
@@ -7,7 +8,7 @@ pub fn rank_documents(embeddings: &[FileEmbedding], query: &str) -> Vec<ScoredDo
 
     // Add each document to the scorer with its index as ID
     for (i, e) in embeddings.iter().enumerate() {
-        scorer.upsert(&i, e.bm25_vector);
+        scorer.upsert(&i, &e.bm25_vector);
     }
 
     // Create query embedding
