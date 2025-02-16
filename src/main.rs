@@ -41,6 +41,10 @@ enum Commands {
         /// The query to find relevant files (optional if using stdin)
         #[arg(trailing_var_arg = true)]
         prompt: Vec<String>,
+
+        /// Only return results with similarity >= filter-similarity (0.0 to 1.0)
+        #[arg(long, default_value = "0.0")]
+        filter_similarity: f32,
     },
 
     /// Expand a prompt using a system prompt
@@ -76,7 +80,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
             scan::scan_files(&pattern, &api_key, chunk_size, overlap_size, embed_metadata).await?;
         }
-        Commands::SuggestFiles { prompt } => {
+        Commands::SuggestFiles { prompt, filter_similarity } => {
+            if !(0.0..=1.0).contains(&filter_similarity) {
+                eprintln!("Error: filter-similarity must be between 0.0 and 1.0");
+                std::process::exit(1);
+            }
             let prompt_text = if prompt.is_empty() {
                 let mut buffer = String::new();
                 std::io::stdin().read_to_string(&mut buffer)?;
@@ -92,7 +100,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             match openai::get_embedding(&prompt_text, &api_key).await {
                 Ok(embedding) => {
-                    let _related_files = openai::find_related_files(embedding).await;
+                    let _related_files = openai::find_related_files(embedding, filter_similarity).await;
                 }
                 Err(e) => {
                     eprintln!("Error getting embedding: {}", e);
