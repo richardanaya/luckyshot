@@ -106,7 +106,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             };
 
             if prompt_text.is_empty() {
-                eprintln!("Error: No input provided via arguments or stdin");
+                eprintln!("Error: You must provide a prompt to search by, either as arguments or via stdin");
                 std::process::exit(1);
             }
 
