@@ -129,13 +129,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             system_prompt,
         } => {
             let prompt_text = if prompt.is_empty() {
-                // Read from stdin if no prompt arguments provided
-                let mut buffer = String::new();
-                std::io::stdin().read_line(&mut buffer)?;
-                buffer
+                // Only try to read from stdin if it's not a terminal
+                if atty::isnt(atty::Stream::Stdin) {
+                    let mut buffer = String::new();
+                    std::io::stdin().read_line(&mut buffer)?;
+                    buffer
+                } else {
+                    String::new()
+                }
             } else {
                 prompt.join(" ")
             };
+
+            if prompt_text.is_empty() {
+                eprintln!("Error: No prompt given");
+                std::process::exit(1);
+            }
 
             if !prompt_text.trim().is_empty() {
                 match openai::get_openai_chat_completion(&prompt_text, &system_prompt, &api_key)
