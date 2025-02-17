@@ -12,6 +12,7 @@ A powerful CLI tool that enhances code understanding and automation by finding t
 - [Why This Tool?](#why-this-tool)
 - [Warnings](#warnings)
 - [Features](#features)
+- [Hyperparameters](#hyperparameters)
 - [Installation](#installation)
 - [Usage](#usage)
   - [Scanning Files](#scanning-files)
@@ -50,6 +51,16 @@ This dual approach helps ensure you don't miss important context when using AI t
 - Support for piped input and file suggestions
 - Intelligent context expansion
 - Supports Unix-philosophy piped commands
+
+## Hyperparameters
+
+The tool allows for the adjustment of several hyperparameters to fine-tune its performance:
+
+- **Chunk Size**: Determines the size of the code chunks used during scanning. Larger chunks may capture more context but can be less precise.
+- **Chunk Overlap**: Controls the overlap between consecutive chunks. Increasing overlap can help capture context that spans across chunk boundaries.
+- **Filter Similarity**: Sets the threshold for similarity scores when suggesting files. A higher threshold will result in fewer, more relevant suggestions.
+
+These hyperparameters can be adjusted via command-line options to suit different use cases and codebases. Experimenting with these values can help optimize the tool's performance for your specific needs.
 
 ## Installation
 
