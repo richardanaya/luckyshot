@@ -1,8 +1,26 @@
+# LuckyShot
+
+![Build Status](https://img.shields.io/badge/build-passing-brightgreen) ![License](https://img.shields.io/badge/license-MIT-blue)
+
 <p align="center">
   <img src="https://github.com/user-attachments/assets/b58cd03b-1cd8-4d97-b0e1-5498c83df2a3" alt="Description" width="300">
 </p>
 
 A powerful CLI tool that enhances code understanding and automation by finding the most relevant files in your codebase for AI-assisted programming.
+
+## Table of Contents
+- [Why This Tool?](#why-this-tool)
+- [Warnings](#warnings)
+- [Features](#features)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Scanning Files](#scanning-files)
+  - [Finding Relevant Files](#finding-relevant-files)
+  - [Expanding Context](#expanding-context)
+- [Environment Setup](#environment-setup)
+- [Hybrid Algorithm](#hybrid-algorithm)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Why This Tool?
 
@@ -21,9 +39,9 @@ The hybrid scoring system combines both approaches:
 
 This dual approach helps ensure you don't miss important context when using AI to modify your codebase.
 
-# Warnings!
+## Warnings!
 
-This tool is alpha and not thoroughly evalulated with real world tests.  Be aware of the costs of embedding vectors!
+⚠️ **This tool is alpha and not thoroughly evaluated with real-world tests. Be aware of the costs of embedding vectors!**
 
 ## Features
 
@@ -93,9 +111,9 @@ luckyshot suggest-files -p "openai" --count 5
 # Combine options
 luckyshot suggest-files -p "embedding" --verbose --file-contents --filter-similarity 0.7 --count 3
 
- # Chain commands Unix-style                                                                                                                                                              
+ # Chain commands Unix-style                                                                                                                                                               
  echo "what openai url am I using" | \                                                                                                                                                    
-   luckyshot expand "you are a rust expert who describes their \                                                                                                                          
+   luckyshot expand "you are a rust expert who describes their \                                                                                                                           
       question and the files you are looking for" | \                                                                                                                                     
    luckyshot suggest-files --verbose  
 ```
@@ -151,10 +169,12 @@ The tool uses a novel hybrid approach combining BM25 and embedding-based similar
 
 This hybrid approach helps balance exact keyword matching (BM25) with semantic understanding (embeddings).
 
-## Experimental
+## Contributing
 
-BM25 tokenization and ranking.
+Contributions are welcome! Please fork the repository and submit a pull request. For major changes, please open an issue first to discuss what you would like to change.
 
 ## License
 
 MIT
+
+For more details, see the [LICENSE](LICENSE) file.
