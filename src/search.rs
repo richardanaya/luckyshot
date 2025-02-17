@@ -15,6 +15,8 @@ pub async fn find_related_files(
     debug: bool,
     file_contents: bool,
     count: usize,
+    bm25_scale: f32,
+    rag_scale: f32,
 ) -> Result<Vec<String>, Box<dyn std::error::Error>> {
     // Load the vectors file
     let vectors_content = match fs::read_to_string(".luckyshot.file.vectors.v1") {
@@ -164,7 +166,7 @@ pub async fn find_related_files(
                 .map_or(0.0, |b| b.score);
             FileMatch {
                 filename: m.filename.clone(),
-                similarity: (m.similarity + bm25_score) / 2.0,
+                similarity: (rag_scale * m.similarity) + (bm25_scale * bm25_score),
             }
         })
         .collect::<Vec<_>>();

@@ -66,6 +66,14 @@ enum Commands {
         /// Limit the number of results (0 for unlimited)
         #[arg(short, long, default_value = "0")]
         count: usize,
+
+        /// Scale factor for BM25 score influence (default 0.1)
+        #[arg(long, default_value = "0.1")]
+        bm25_scale: f32,
+
+        /// Scale factor for RAG score influence (default 1.0)
+        #[arg(long, default_value = "1.0")]
+        rag_scale: f32,
     },
 
     /// Expand a prompt using a system prompt
@@ -115,6 +123,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             debug,
             file_contents,
             count,
+            bm25_scale,
+            rag_scale,
         } => {
             if !(0.0..=1.0).contains(&filter_similarity) {
                 eprintln!("Error: filter-similarity must be between 0.0 and 1.0");
@@ -147,6 +157,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 debug,
                 file_contents,
                 count,
+                bm25_scale,
+                rag_scale
             )
             .await
             {
