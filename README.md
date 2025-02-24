@@ -52,6 +52,14 @@ This dual approach helps ensure you don't miss important context when using AI t
 - Intelligent context expansion
 - Supports Unix-philosophy piped commands
 
+## Goals
+
+- AI hyper-parameter assignment
+- rank by distance from date
+- rank by regex count
+- rank by file extension preference
+- ability to `aider /load luckyshot --aider "find me the important file"`
+
 ## Hyperparameters
 
 The tool allows for the adjustment of several hyperparameters to fine-tune its performance:
